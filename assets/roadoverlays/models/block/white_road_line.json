@@ -1,0 +1,15 @@
+{
+  "textures": {
+    "paint": "roadoverlays:paints/line_straight_full_0",
+    "particle": "roadoverlays:paints/line_straight_full_0"
+  },
+  "elements": [
+    {
+      "from": [0, 0, 0],
+      "to": [16, 1, 16],
+      "faces": {
+        "up": { "texture": "#paint", "tintindex": 0 }
+      }
+    }
+  ]
+}

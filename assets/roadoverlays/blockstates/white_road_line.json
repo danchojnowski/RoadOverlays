@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "roadoverlays:block/white_road_line" },
+    "facing=east": { "model": "roadoverlays:block/white_road_line", "y": 90 },
+    "facing=south": { "model": "roadoverlays:block/white_road_line", "y": 180 },
+    "facing=west": { "model": "roadoverlays:block/white_road_line", "y": 270 }
+  }
+}
