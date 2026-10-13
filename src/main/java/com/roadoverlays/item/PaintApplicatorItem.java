@@ -35,13 +35,12 @@ import java.util.UUID;
 /** Two-click placement of a continuous or dashed road marking using carried paint. */
 public final class PaintApplicatorItem extends Item {
     public static final int MAX_PATTERN = 64;
-    private static final int MAX_TILES = 512;
+    private static final int MAX_TILES = 1024;
     private static final Map<UUID, Start> STARTS = new java.util.HashMap<>();
 
-    private record Start(BlockPos support, String dimension, Item paintItem, Direction facing,
+    private record Start(BlockPos support, String dimension, Item paintItem,
                          double centerX, double centerZ, double hitX, double hitZ,
-                         double radiusCenterX, double radiusCenterZ,
-                         int radius, boolean curve) { }
+                         int radius, boolean curve, boolean turnRight) { }
 
     public PaintApplicatorItem(Properties properties) {
         super(properties);
@@ -67,17 +66,15 @@ public final class PaintApplicatorItem extends Item {
 
         BlockPos support = context.getClickedPos();
         if (start == null || !start.dimension.equals(dimension) || start.paintItem != paintStack.getItem()) {
-            Direction facing = player.getDirection().getOpposite();
             RoadPaintBlock block = (RoadPaintBlock) paintItem.getBlock();
             CurvePaint curve = block.getCurvePaint();
             int radius = curve == null ? 0 : Math.clamp(paintStack.getOrDefault(
                     RoadOverlays.CURVE_RADIUS.get(), CurvePaint.DEFAULT_RADIUS), 1, CurvePaint.MAX_RADIUS);
-            Direction side = player.isShiftKeyDown() ? facing.getCounterClockWise() : facing.getClockWise();
-            STARTS.put(player.getUUID(), new Start(support, dimension, paintStack.getItem(), facing,
+            boolean turnRight = !player.isShiftKeyDown();
+            STARTS.put(player.getUUID(), new Start(support, dimension, paintStack.getItem(),
                     support.getX() + 0.5, support.getZ() + 0.5,
                     context.getClickLocation().x, context.getClickLocation().z,
-                    support.getX() + 0.5 + side.getStepX() * radius,
-                    support.getZ() + 0.5 + side.getStepZ() * radius, radius, curve != null));
+                    radius, curve != null, turnRight));
             player.displayClientMessage(Component.translatable("message.roadoverlays.applicator_start"), true);
             return InteractionResult.SUCCESS;
         }
@@ -90,7 +87,12 @@ public final class PaintApplicatorItem extends Item {
             player.displayClientMessage(Component.translatable("message.roadoverlays.applicator_height"), true);
             return InteractionResult.SUCCESS;
         }
-        int placed = layPaint(level, player, paintItem, start, support, context.getClickLocation(),
+        CurvePaint.Parameters circle = start.curve ? circleThroughEnds(start, support) : null;
+        if (start.curve && circle == null) {
+            player.displayClientMessage(Component.translatable("message.roadoverlays.applicator_radius"), true);
+            return InteractionResult.SUCCESS;
+        }
+        int placed = layPaint(level, player, paintItem, start, support, context.getClickLocation(), circle,
                 context.getItemInHand().getOrDefault(RoadOverlays.APPLICATOR_PLACE.get(), 3),
                 context.getItemInHand().getOrDefault(RoadOverlays.APPLICATOR_SKIP.get(), 0));
         player.displayClientMessage(Component.translatable("message.roadoverlays.applicator_placed", placed), true);
@@ -122,10 +124,10 @@ public final class PaintApplicatorItem extends Item {
     }
 
     private static int layPaint(Level level, Player player, RoadPaintItem paintItem,
-                                Start start, BlockPos end, Vec3 endHit, int placeCount, int skipCount) {
+                                Start start, BlockPos end, Vec3 endHit, CurvePaint.Parameters circle,
+                                int placeCount, int skipCount) {
         RoadPaintBlock block = (RoadPaintBlock) paintItem.getBlock();
-        LinkedHashMap<BlockPos, Vec3> tiles = start.curve ? curveTiles(start, end) : straightTiles(start, end, block);
-        Direction facing = start.facing;
+        Direction facing = Direction.NORTH;
         int angle = -1;
         AngledPaint.Normal normal = null;
         if (block.getAngledPaint() != null) {
@@ -152,6 +154,8 @@ public final class PaintApplicatorItem extends Item {
             int dz = end.getZ() - start.support.getZ();
             facing = Math.abs(dx) > Math.abs(dz) ? Direction.EAST : Direction.NORTH;
         }
+        LinkedHashMap<BlockPos, Vec3> tiles = start.curve ? curveTiles(start, end, circle)
+                : straightTiles(start, end, normal);
         int placed = 0;
         int index = 0;
         int cycle = Math.clamp(placeCount, 1, MAX_PATTERN) + Math.clamp(skipCount, 0, MAX_PATTERN);
@@ -176,10 +180,8 @@ public final class PaintApplicatorItem extends Item {
             if (!state.canSurvive(level, target) || !level.setBlock(target, state, Block.UPDATE_ALL)) continue;
             double offset = normal == null ? 0 : normal.x() * (start.centerX - target.getX() - 0.5)
                     + normal.z() * (start.centerZ - target.getZ() - 0.5);
-            CurvePaint.Parameters curve = start.curve ? new CurvePaint.Parameters(
-                    start.radius, start.radiusCenterX, start.radiusCenterZ) : null;
             if (level.getBlockEntity(target) instanceof RoadPaintBlockEntity entity) {
-                entity.setPlacement(height, offset, angle, curve);
+                entity.setPlacement(height, offset, angle, circle);
             }
             if (!player.getAbilities().instabuild) supply.shrink(1);
             placed++;
@@ -187,11 +189,19 @@ public final class PaintApplicatorItem extends Item {
         return placed;
     }
 
-    private static LinkedHashMap<BlockPos, Vec3> straightTiles(Start start, BlockPos end, RoadPaintBlock block) {
+    private static LinkedHashMap<BlockPos, Vec3> straightTiles(Start start, BlockPos end,
+                                                                AngledPaint.Normal normal) {
         double dx = end.getX() - start.support.getX();
         double dz = end.getZ() - start.support.getZ();
-        // Static line textures only join cleanly along a cardinal axis.
-        if (block.getAngledPaint() == null) {
+        if (normal != null) {
+            // Follow the rendered half-degree angle so a long run stays on its painted centerline.
+            double tx = -normal.z();
+            double tz = normal.x();
+            double distance = dx * tx + dz * tz;
+            dx = tx * distance;
+            dz = tz * distance;
+        } else {
+            // Static line textures only join cleanly along a cardinal axis.
             if (Math.abs(dx) >= Math.abs(dz)) dz = 0;
             else dx = 0;
         }
@@ -205,17 +215,37 @@ public final class PaintApplicatorItem extends Item {
         return result;
     }
 
-    private static LinkedHashMap<BlockPos, Vec3> curveTiles(Start start, BlockPos end) {
-        double first = Math.atan2(start.centerZ - start.radiusCenterZ, start.centerX - start.radiusCenterX);
-        double last = Math.atan2(end.getZ() + 0.5 - start.radiusCenterZ,
-                end.getX() + 0.5 - start.radiusCenterX);
-        double sweep = Math.atan2(Math.sin(last - first), Math.cos(last - first));
+    private static CurvePaint.Parameters circleThroughEnds(Start start, BlockPos end) {
+        double dx = end.getX() + 0.5 - start.centerX;
+        double dz = end.getZ() + 0.5 - start.centerZ;
+        double distance = Math.hypot(dx, dz);
+        if (distance < 1.0e-6 || distance > start.radius * 2.0) return null;
+        double half = distance / 2.0;
+        double side = Math.sqrt(Math.max(0, start.radius * start.radius - half * half));
+        double sign = start.turnRight ? 1 : -1;
+        return new CurvePaint.Parameters(start.radius,
+                start.centerX + dx / 2.0 - sign * dz / distance * side,
+                start.centerZ + dz / 2.0 + sign * dx / distance * side);
+    }
+
+    private static LinkedHashMap<BlockPos, Vec3> curveTiles(Start start, BlockPos end,
+                                                             CurvePaint.Parameters circle) {
+        double first = Math.atan2(start.centerZ - circle.centerZ(), start.centerX - circle.centerX());
+        double last = Math.atan2(end.getZ() + 0.5 - circle.centerZ(),
+                end.getX() + 0.5 - circle.centerX());
+        double fullTurn = Math.PI * 2;
+        double difference = last - first;
+        // The selected side chooses one of the two circles through both clicked blocks.
+        // Follow its arc from start to end, with a positive sweep for right bends.
+        double sweep = start.turnRight
+                ? ((difference % fullTurn) + fullTurn) % fullTurn
+                : -(((-difference % fullTurn) + fullTurn) % fullTurn);
         int steps = Math.min(MAX_TILES * 16, (int) Math.ceil(Math.abs(sweep) * start.radius * 16));
         LinkedHashMap<BlockPos, Vec3> result = new LinkedHashMap<>();
         for (int i = 0; i <= steps; i++) {
             double angle = first + sweep * (steps == 0 ? 0 : i / (double) steps);
-            addTile(result, start.support.getY(), start.radiusCenterX + Math.cos(angle) * start.radius,
-                    start.radiusCenterZ + Math.sin(angle) * start.radius);
+            addTile(result, start.support.getY(), circle.centerX() + Math.cos(angle) * start.radius,
+                    circle.centerZ() + Math.sin(angle) * start.radius);
             if (result.size() >= MAX_TILES) break;
         }
         return result;

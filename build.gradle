@@ -50,6 +50,7 @@ tasks.register('generatePaintResources') {
                 'message.roadoverlays.applicator_start': 'Start selected. Click an end block; click the start again to cancel.',
                 'message.roadoverlays.applicator_cancel': 'Paint run cancelled.',
                 'message.roadoverlays.applicator_height': 'Start and end must be at the same block height.',
+                'message.roadoverlays.applicator_radius': 'The blocks are farther apart than the selected curve diameter. Increase the radius.',
                 'message.roadoverlays.applicator_placed': 'Placed %s paint blocks.'
         ]
         def writeJson = { String path, Object value ->
