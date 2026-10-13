@@ -1,13 +1,15 @@
 package com.roadoverlays;
 
 import com.roadoverlays.block.RoadPaintBlock;
+import com.roadoverlays.block.entity.RoadPaintBlockEntity;
+import com.roadoverlays.item.RoadPaintItem;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredRegister;
@@ -22,6 +24,8 @@ public class RoadOverlays {
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, MOD_ID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, MOD_ID);
+    public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
+            DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
             DeferredRegister.create(Registries.CREATIVE_MODE_TAB, MOD_ID);
 
@@ -32,12 +36,17 @@ public class RoadOverlays {
         for (DyeColor color : DyeColor.values()) {
             String name = color.getName() + "_road_line";
             Supplier<Block> block = BLOCKS.register(name,
-                    () -> new RoadPaintBlock(Block.Properties.of().noCollission().instabreak().noOcclusion()));
+                    () -> new RoadPaintBlock(color, Block.Properties.of().noCollission().instabreak().noOcclusion()));
             ROAD_LINES.put(color, block);
             ROAD_LINE_ITEMS.put(color, ITEMS.register(name,
-                    () -> new BlockItem(block.get(), new Item.Properties())));
+                    () -> new RoadPaintItem(block.get(), new Item.Properties())));
         }
     }
+
+    public static final Supplier<BlockEntityType<RoadPaintBlockEntity>> ROAD_PAINT_BLOCK_ENTITY =
+            BLOCK_ENTITY_TYPES.register("road_paint", () -> BlockEntityType.Builder.of(
+                    RoadPaintBlockEntity::new, ROAD_LINES.values().stream().map(Supplier::get).toArray(Block[]::new)
+            ).build(null));
 
     public static final Supplier<Block> WHITE_ROAD_LINE = ROAD_LINES.get(DyeColor.WHITE);
     public static final Supplier<Item> WHITE_ROAD_LINE_ITEM = ROAD_LINE_ITEMS.get(DyeColor.WHITE);
@@ -56,6 +65,7 @@ public class RoadOverlays {
     public RoadOverlays(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
+        BLOCK_ENTITY_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
     }
 }

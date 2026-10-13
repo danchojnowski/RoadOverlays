@@ -6,6 +6,7 @@ import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.RegisterColorHandlersEvent;
+import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 
 @EventBusSubscriber(modid = RoadOverlays.MOD_ID, bus = EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
 public final class RoadOverlaysClient {
@@ -28,5 +29,11 @@ public final class RoadOverlaysClient {
             event.register((stack, tintIndex) -> tintIndex == 0 ? tint : 0xFFFFFFFF,
                     RoadOverlays.ROAD_LINE_ITEMS.get(color).get());
         }
+    }
+
+    @SubscribeEvent
+    public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
+        event.registerBlockEntityRenderer(RoadOverlays.ROAD_PAINT_BLOCK_ENTITY.get(),
+                context -> new RoadPaintRenderer());
     }
 }
