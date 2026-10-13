@@ -3,6 +3,7 @@ package com.roadoverlays.client;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import com.roadoverlays.block.RoadPaintBlock;
+import com.roadoverlays.block.AngledPaint;
 import com.roadoverlays.block.entity.RoadPaintBlockEntity;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.renderer.MultiBufferSource;
@@ -43,10 +44,24 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
 
         PoseStack.Pose pose = poseStack.last();
         VertexConsumer vertices = buffers.getBuffer(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
-        vertex(vertices, pose, -0.5f, -0.5f, sprite.getU0(), sprite.getV0(), red, green, blue, packedLight, packedOverlay);
-        vertex(vertices, pose, -0.5f, 0.5f, sprite.getU0(), sprite.getV1(), red, green, blue, packedLight, packedOverlay);
-        vertex(vertices, pose, 0.5f, 0.5f, sprite.getU1(), sprite.getV1(), red, green, blue, packedLight, packedOverlay);
-        vertex(vertices, pose, 0.5f, -0.5f, sprite.getU1(), sprite.getV0(), red, green, blue, packedLight, packedOverlay);
+        float u0 = sprite.getU0();
+        float u1 = sprite.getU1();
+        float v0 = sprite.getV0();
+        float v1 = sprite.getV1();
+        AngledPaint angled = block.getAngledPaint();
+        if (angled != null) {
+            float du = u1 - u0;
+            float dv = v1 - v0;
+            double offset = paint.getLineOffset();
+            u0 = sprite.getU0() + du * (float) (0.375 - offset * angled.normalX() / 4);
+            u1 = u0 + du * 0.25f;
+            v0 = sprite.getV0() + dv * (float) (0.375 - offset * angled.normalZ() / 4);
+            v1 = v0 + dv * 0.25f;
+        }
+        vertex(vertices, pose, -0.5f, -0.5f, u0, v0, red, green, blue, packedLight, packedOverlay);
+        vertex(vertices, pose, -0.5f, 0.5f, u0, v1, red, green, blue, packedLight, packedOverlay);
+        vertex(vertices, pose, 0.5f, 0.5f, u1, v1, red, green, blue, packedLight, packedOverlay);
+        vertex(vertices, pose, 0.5f, -0.5f, u1, v0, red, green, blue, packedLight, packedOverlay);
         poseStack.popPose();
     }
 

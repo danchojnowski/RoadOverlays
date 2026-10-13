@@ -15,11 +15,14 @@ public class RoadPaintItem extends BlockItem {
     @Override
     protected boolean placeBlock(BlockPlaceContext context, BlockState state) {
         double surfaceHeight = RoadPaintBlock.surfaceHeight(context);
+        RoadPaintBlock block = (RoadPaintBlock) state.getBlock();
+        double lineOffset = block.getAngledPaint() == null ? 0
+                : block.getAngledPaint().connectedOffset(context, state, surfaceHeight);
         if (!super.placeBlock(context, state)) {
             return false;
         }
         if (context.getLevel().getBlockEntity(context.getClickedPos()) instanceof RoadPaintBlockEntity paint) {
-            paint.setSurfaceHeight(surfaceHeight);
+            paint.setPlacement(surfaceHeight, lineOffset);
         }
         return true;
     }

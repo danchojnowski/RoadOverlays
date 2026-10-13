@@ -25,11 +25,14 @@ import net.minecraft.world.phys.shapes.Shapes;
 public class RoadPaintBlock extends Block implements EntityBlock {
     private final DyeColor color;
     private final ResourceLocation texture;
+    private final AngledPaint angledPaint;
 
     public RoadPaintBlock(DyeColor color, String texture, Properties properties) {
         super(properties);
         this.color = color;
-        this.texture = ResourceLocation.fromNamespaceAndPath("roadoverlays", "block/" + texture);
+        this.angledPaint = AngledPaint.fromTexture(texture);
+        this.texture = ResourceLocation.fromNamespaceAndPath("roadoverlays",
+                "block/" + texture + (angledPaint == null ? "" : "_canvas"));
         registerDefaultState(stateDefinition.any()
                 .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH));
     }
@@ -61,6 +64,10 @@ public class RoadPaintBlock extends Block implements EntityBlock {
 
     public ResourceLocation getPaintTexture() {
         return texture;
+    }
+
+    public AngledPaint getAngledPaint() {
+        return angledPaint;
     }
 
     @Override

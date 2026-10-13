@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.state.BlockState;
 
 public class RoadPaintBlockEntity extends BlockEntity {
     private double surfaceHeight;
+    private double lineOffset;
 
     public RoadPaintBlockEntity(BlockPos pos, BlockState state) {
         super(RoadOverlays.ROAD_PAINT_BLOCK_ENTITY.get(), pos, state);
@@ -26,8 +27,13 @@ public class RoadPaintBlockEntity extends BlockEntity {
         return surfaceHeight;
     }
 
-    public void setSurfaceHeight(double height) {
+    public double getLineOffset() {
+        return lineOffset;
+    }
+
+    public void setPlacement(double height, double offset) {
         surfaceHeight = Mth.clamp(height, 0, 1);
+        lineOffset = offset;
         setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
@@ -40,12 +46,14 @@ public class RoadPaintBlockEntity extends BlockEntity {
         if (tag.contains("surface_height")) {
             surfaceHeight = Mth.clamp(tag.getDouble("surface_height"), 0, 1);
         }
+        lineOffset = tag.getDouble("line_offset");
     }
 
     @Override
     protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
         super.saveAdditional(tag, registries);
         tag.putDouble("surface_height", surfaceHeight);
+        tag.putDouble("line_offset", lineOffset);
     }
 
     @Override
