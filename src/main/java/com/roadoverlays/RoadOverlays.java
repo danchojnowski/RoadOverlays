@@ -1,11 +1,15 @@
 package com.roadoverlays;
 
+import com.mojang.serialization.Codec;
 import com.roadoverlays.block.RoadPaintBlock;
+import com.roadoverlays.block.CurvePaint;
 import com.roadoverlays.block.LegacyRoadPaintBlock;
 import com.roadoverlays.block.entity.RoadPaintBlockEntity;
 import com.roadoverlays.item.RoadPaintItem;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -14,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.neoforge.registries.DeferredRegister;
+import net.neoforged.neoforge.registries.DeferredHolder;
 
 import java.util.EnumMap;
 import java.util.LinkedHashMap;
@@ -26,6 +31,12 @@ public class RoadOverlays {
 
     public static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(Registries.BLOCK, MOD_ID);
     public static final DeferredRegister<Item> ITEMS = DeferredRegister.create(Registries.ITEM, MOD_ID);
+    public static final DeferredRegister.DataComponents DATA_COMPONENTS =
+            DeferredRegister.createDataComponents(Registries.DATA_COMPONENT_TYPE, MOD_ID);
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> CURVE_RADIUS =
+            DATA_COMPONENTS.registerComponentType("curve_radius", builder -> builder
+                    .persistent(Codec.intRange(1, CurvePaint.MAX_RADIUS))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT));
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -82,6 +93,7 @@ public class RoadOverlays {
     public RoadOverlays(IEventBus modEventBus) {
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
+        DATA_COMPONENTS.register(modEventBus);
         BLOCK_ENTITY_TYPES.register(modEventBus);
         CREATIVE_MODE_TABS.register(modEventBus);
     }

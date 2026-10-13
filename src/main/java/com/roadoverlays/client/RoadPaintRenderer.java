@@ -16,16 +16,17 @@ import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 import net.minecraft.world.phys.AABB;
 import com.mojang.math.Axis;
+import net.minecraft.resources.ResourceLocation;
 
 public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEntity> {
     private static final double SURFACE_OFFSET = 1.0 / 1024.0;
+    private static final ResourceLocation WHITE_PIXEL =
+            ResourceLocation.fromNamespaceAndPath("roadoverlays", "block/white_road_line");
 
     @Override
     public void render(RoadPaintBlockEntity paint, float partialTick, PoseStack poseStack,
                        MultiBufferSource buffers, int packedLight, int packedOverlay) {
         RoadPaintBlock block = (RoadPaintBlock) paint.getBlockState().getBlock();
-        TextureAtlasSprite sprite = Minecraft.getInstance()
-                .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(block.getPaintTexture());
         int color = block.getPaintColor().getTextureDiffuseColor();
         int red = color >> 16 & 0xFF;
         int green = color >> 8 & 0xFF;
@@ -33,6 +34,17 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
 
         poseStack.pushPose();
         poseStack.translate(0.5, paint.getSurfaceHeight() - 1 + SURFACE_OFFSET, 0.5);
+        VertexConsumer vertices = buffers.getBuffer(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
+        if (block.getCurvePaint() != null) {
+            TextureAtlasSprite whitePixel = Minecraft.getInstance()
+                    .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(WHITE_PIXEL);
+            CurvePaintRenderer.render(paint, block.getCurvePaint(), poseStack.last(),
+                    vertices, whitePixel, red, green, blue, packedLight, packedOverlay);
+            poseStack.popPose();
+            return;
+        }
+        TextureAtlasSprite sprite = Minecraft.getInstance()
+                .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(block.getPaintTexture());
         Direction facing = paint.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
         int rotation = switch (facing) {
             case EAST -> 270;
@@ -43,7 +55,6 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
         PoseStack.Pose pose = poseStack.last();
-        VertexConsumer vertices = buffers.getBuffer(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
         float u0 = sprite.getU0();
         float u1 = sprite.getU1();
         float v0 = sprite.getV0();

@@ -153,3 +153,7 @@ angled_line_double_thick_30	angled_line_double_thick_30	Double Thick Road Line 3
 angled_line_double_thick_45	angled_line_double_thick_45	Double Thick Road Line 45°	...DL....		line_straight_double_thick_0
 angled_line_double_thick_60	angled_line_double_thick_60	Double Thick Road Line 60°	....L.D..		line_straight_double_thick_0
 angled_line_double_thick_67_5	angled_line_double_thick_67_5	Double Thick Road Line 67.5°	....L..D.		line_straight_double_thick_0
+curved_line_single	curved_line_single	Curved Road Line	D...L....		angled_line_single_45
+curved_line_double	curved_line_double	Curved Double Road Line	D...L....		angled_line_double_45
+curved_line_thick	curved_line_thick	Curved Thick Road Line	D...L....		angled_line_thick_45
+curved_line_double_thick	curved_line_double_thick	Curved Double Thick Road Line	D...L....		angled_line_double_thick_45

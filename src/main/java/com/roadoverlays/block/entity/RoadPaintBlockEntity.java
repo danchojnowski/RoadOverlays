@@ -2,6 +2,7 @@ package com.roadoverlays.block.entity;
 
 import com.roadoverlays.RoadOverlays;
 import com.roadoverlays.block.LegacyRoadPaintBlock;
+import com.roadoverlays.block.CurvePaint;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -16,6 +17,9 @@ import net.minecraft.world.level.block.state.BlockState;
 public class RoadPaintBlockEntity extends BlockEntity {
     private double surfaceHeight;
     private double lineOffset;
+    private double curveRadius;
+    private double curveCenterX;
+    private double curveCenterZ;
 
     public RoadPaintBlockEntity(BlockPos pos, BlockState state) {
         super(RoadOverlays.ROAD_PAINT_BLOCK_ENTITY.get(), pos, state);
@@ -31,9 +35,26 @@ public class RoadPaintBlockEntity extends BlockEntity {
         return lineOffset;
     }
 
-    public void setPlacement(double height, double offset) {
+    public double getCurveRadius() {
+        return curveRadius;
+    }
+
+    public double getCurveCenterX() {
+        return curveCenterX;
+    }
+
+    public double getCurveCenterZ() {
+        return curveCenterZ;
+    }
+
+    public void setPlacement(double height, double offset, CurvePaint.Parameters curve) {
         surfaceHeight = Mth.clamp(height, 0, 1);
         lineOffset = offset;
+        if (curve != null) {
+            curveRadius = curve.radius();
+            curveCenterX = curve.centerX();
+            curveCenterZ = curve.centerZ();
+        }
         setChanged();
         if (level != null && !level.isClientSide) {
             level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
@@ -47,6 +68,9 @@ public class RoadPaintBlockEntity extends BlockEntity {
             surfaceHeight = Mth.clamp(tag.getDouble("surface_height"), 0, 1);
         }
         lineOffset = tag.getDouble("line_offset");
+        curveRadius = tag.getDouble("curve_radius");
+        curveCenterX = tag.getDouble("curve_center_x");
+        curveCenterZ = tag.getDouble("curve_center_z");
     }
 
     @Override
@@ -54,6 +78,11 @@ public class RoadPaintBlockEntity extends BlockEntity {
         super.saveAdditional(tag, registries);
         tag.putDouble("surface_height", surfaceHeight);
         tag.putDouble("line_offset", lineOffset);
+        if (curveRadius > 0) {
+            tag.putDouble("curve_radius", curveRadius);
+            tag.putDouble("curve_center_x", curveCenterX);
+            tag.putDouble("curve_center_z", curveCenterZ);
+        }
     }
 
     @Override

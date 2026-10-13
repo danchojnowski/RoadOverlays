@@ -30,7 +30,12 @@ tasks.register('generatePaintResources') {
         delete(root)
         def colors = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray',
                       'light_gray', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black']
-        def names = ['itemGroup.roadoverlays': 'Road Overlays']
+        def names = [
+                'itemGroup.roadoverlays': 'Road Overlays',
+                'message.roadoverlays.curve_radius': 'Curve radius: %s blocks',
+                'tooltip.roadoverlays.curve_radius': 'Radius: %s blocks',
+                'tooltip.roadoverlays.curve_controls': 'Right-click without placing to increase; sneak to decrease. Sneak while placing to turn left.'
+        ]
         def writeJson = { String path, Object value ->
             def target = new File(root, path)
             target.parentFile.mkdirs()
@@ -62,6 +67,33 @@ tasks.register('generatePaintResources') {
             target.parentFile.mkdirs()
             ImageIO.write(image, 'png', target)
         }
+        def drawCurvedLine = { texture, style ->
+            int size = 64
+            def image = new BufferedImage(size, size, BufferedImage.TYPE_INT_ARGB)
+            def graphics = image.createGraphics()
+            graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
+            graphics.setColor(Color.WHITE)
+            int stripeWidth = style.contains('thick') ? 16 : 8
+            graphics.setStroke(new BasicStroke(stripeWidth, BasicStroke.CAP_BUTT, BasicStroke.JOIN_BEVEL))
+            def offsets = style.startsWith('double')
+                    ? (style == 'double_thick' ? [-12d, 12d] : [-8d, 8d]) : [0d]
+            offsets.each { offset ->
+                double radius = 50 + offset
+                def path = new java.awt.geom.Path2D.Double()
+                for (int i = 0; i <= 64; i++) {
+                    double angle = Math.PI + Math.PI * i / 128
+                    double x = 58 + Math.cos(angle) * radius
+                    double y = 58 + Math.sin(angle) * radius
+                    if (i == 0) path.moveTo(x, y)
+                    else path.lineTo(x, y)
+                }
+                graphics.draw(path)
+            }
+            graphics.dispose()
+            def target = new File(root, "assets/roadoverlays/textures/block/${texture}.png")
+            target.parentFile.mkdirs()
+            ImageIO.write(image, 'png', target)
+        }
         paintCatalogFile.readLines('UTF-8').findAll { it && !it.startsWith('#') }.each { row ->
             def fields = row.split('\t', -1)
             def (id, texture, displayName, recipe) = fields[0..3]
@@ -76,6 +108,8 @@ tasks.register('generatePaintResources') {
                 drawAngledLine(texture, angled[0][1], angle, 64)
                 drawAngledLine(texture + '_canvas', angled[0][1], angle, 256)
             }
+            def curved = id =~ /^curved_line_(single|double|thick|double_thick)$/
+            if (curved.matches()) drawCurvedLine(texture, curved[0][1])
             writeJson("assets/roadoverlays/models/block/${id}.json", [
                     render_type: 'minecraft:cutout', ambientocclusion: false,
                     textures: [paint: "roadoverlays:block/${texture}",

@@ -26,11 +26,13 @@ public class RoadPaintBlock extends Block implements EntityBlock {
     private final DyeColor color;
     private final ResourceLocation texture;
     private final AngledPaint angledPaint;
+    private final CurvePaint curvePaint;
 
     public RoadPaintBlock(DyeColor color, String texture, Properties properties) {
         super(properties);
         this.color = color;
         this.angledPaint = AngledPaint.fromTexture(texture);
+        this.curvePaint = CurvePaint.fromTexture(texture);
         this.texture = ResourceLocation.fromNamespaceAndPath("roadoverlays",
                 "block/" + texture + (angledPaint == null ? "" : "_canvas"));
         registerDefaultState(stateDefinition.any()
@@ -68,6 +70,10 @@ public class RoadPaintBlock extends Block implements EntityBlock {
 
     public AngledPaint getAngledPaint() {
         return angledPaint;
+    }
+
+    public CurvePaint getCurvePaint() {
+        return curvePaint;
     }
 
     @Override

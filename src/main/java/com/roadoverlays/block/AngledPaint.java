@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.Locale;
 
 /** Geometry shared by connected angled paint placement and rendering. */
 public final class AngledPaint {
@@ -20,16 +21,13 @@ public final class AngledPaint {
 
     private final double normalX;
     private final double normalZ;
-    private final double halfWidth;
-    private final double halfSpacing;
+    private final LineStyle style;
 
     private AngledPaint(double degrees, String style) {
         double radians = Math.toRadians(degrees);
         normalX = Math.cos(radians);
         normalZ = -Math.sin(radians);
-        halfWidth = style.contains("thick") ? 2.0 / 16 : 1.0 / 16;
-        halfSpacing = style.startsWith("double")
-                ? (style.contains("thick") ? 3.0 / 16 : 2.0 / 16) : 0;
+        this.style = LineStyle.valueOf(style.toUpperCase(Locale.ROOT));
     }
 
     public static AngledPaint fromTexture(String texture) {
@@ -47,6 +45,10 @@ public final class AngledPaint {
         return normalZ;
     }
 
+    public LineStyle style() {
+        return style;
+    }
+
     public double connectedOffset(BlockPlaceContext context, BlockState state, double surfaceHeight) {
         BlockPos pos = context.getClickedPos();
         Normal normal = worldNormal(state.getValue(BlockStateProperties.HORIZONTAL_FACING));
@@ -59,8 +61,7 @@ public final class AngledPaint {
             BlockState neighborState = context.getLevel().getBlockState(neighborPos);
             if (!(neighborState.getBlock() instanceof RoadPaintBlock neighborBlock)
                     || neighborBlock.getAngledPaint() == null
-                    || halfWidth != neighborBlock.getAngledPaint().halfWidth
-                    || halfSpacing != neighborBlock.getAngledPaint().halfSpacing
+                    || style != neighborBlock.getAngledPaint().style
                     || !(context.getLevel().getBlockEntity(neighborPos) instanceof RoadPaintBlockEntity neighbor)
                     || Math.abs(neighbor.getSurfaceHeight() - surfaceHeight) > 1.0 / 1024) {
                 continue;
@@ -74,9 +75,9 @@ public final class AngledPaint {
                     - normal.x * (pos.getX() - neighborPos.getX())
                     - normal.z * (pos.getZ() - neighborPos.getZ());
             if (!touchesSharedEdge(offset, normal, side)) continue;
-            double distance = halfSpacing == 0 ? Math.abs(click - offset)
-                    : Math.min(Math.abs(click - offset - halfSpacing),
-                    Math.abs(click - offset + halfSpacing));
+            double distance = style.halfSpacing() == 0 ? Math.abs(click - offset)
+                    : Math.min(Math.abs(click - offset - style.halfSpacing()),
+                    Math.abs(click - offset + style.halfSpacing()));
             if (distance < bestDistance) {
                 bestDistance = distance;
                 bestOffset = offset;
@@ -102,10 +103,10 @@ public final class AngledPaint {
             default -> normal.z * -0.5;
         };
         double extent = (side.getAxis() == Direction.Axis.X ? Math.abs(normal.z) : Math.abs(normal.x)) * 0.5;
-        if (Math.abs(offset - edge) <= extent + halfWidth + 1.0e-6) return true;
-        return halfSpacing > 0 && (
-                Math.abs(offset + halfSpacing - edge) <= extent + halfWidth + 1.0e-6
-                        || Math.abs(offset - halfSpacing - edge) <= extent + halfWidth + 1.0e-6);
+        if (Math.abs(offset - edge) <= extent + style.halfWidth() + 1.0e-6) return true;
+        return style.halfSpacing() > 0 && (
+                Math.abs(offset + style.halfSpacing() - edge) <= extent + style.halfWidth() + 1.0e-6
+                        || Math.abs(offset - style.halfSpacing() - edge) <= extent + style.halfWidth() + 1.0e-6);
     }
 
     private record Normal(double x, double z) {
