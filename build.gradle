@@ -3,6 +3,8 @@ plugins {
     id 'net.neoforged.moddev' version '2.0.147'
 }
 
+import groovy.json.JsonOutput
+
 version = project.mod_version
 group = project.mod_group_id
 
@@ -12,9 +14,69 @@ base {
 
 java.toolchain.languageVersion = JavaLanguageVersion.of(21)
 
+def paintCatalogFile = file('src/main/resources/paint_catalog.tsv')
+def generatedPaintResources = layout.buildDirectory.dir('generated/paint_resources')
+
+tasks.register('generatePaintResources') {
+    inputs.file(paintCatalogFile)
+    outputs.dir(generatedPaintResources)
+    doLast {
+        def root = generatedPaintResources.get().asFile
+        delete(root)
+        def colors = ['white', 'orange', 'magenta', 'light_blue', 'yellow', 'lime', 'pink', 'gray',
+                      'light_gray', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black']
+        def names = ['itemGroup.roadoverlays': 'Road Overlays']
+        def writeJson = { String path, Object value ->
+            def target = new File(root, path)
+            target.parentFile.mkdirs()
+            target.text = JsonOutput.prettyPrint(JsonOutput.toJson(value)) + '\n'
+        }
+        paintCatalogFile.readLines('UTF-8').findAll { it && !it.startsWith('#') }.each { row ->
+            def fields = row.split('\t', -1)
+            def (id, texture, displayName, recipe) = fields[0..3]
+            if (id == 'road_line') return
+            if (recipe.length() != 9 || !recipe.contains('L')) {
+                throw new GradleException("Invalid recipe for ${id}")
+            }
+            writeJson("assets/roadoverlays/models/block/${id}.json", [
+                    render_type: 'minecraft:cutout', ambientocclusion: false,
+                    textures: [paint: "roadoverlays:block/${texture}", particle: "roadoverlays:block/${texture}"],
+                    elements: [[from: [0, 0, 0], to: [16, 1, 16],
+                                faces: [up: [texture: '#paint', tintindex: 0]]]]
+            ])
+            colors.each { color ->
+                def fullId = "${color}_${id}"
+                names["block.roadoverlays.${fullId}"] = "${color.replace('_', ' ').split(' ')*.capitalize().join(' ')} ${displayName}"
+                writeJson("assets/roadoverlays/blockstates/${fullId}.json",
+                        [variants: ['': [model: "roadoverlays:block/${id}"]]])
+                writeJson("assets/roadoverlays/models/item/${fullId}.json",
+                        [parent: 'minecraft:item/generated', textures: [layer0: "roadoverlays:block/${texture}"]])
+                def ingredients = [L: [item: "roadoverlays:${color}_road_line"]]
+                if (recipe.contains('D')) ingredients.D = [item: "minecraft:${color}_dye"]
+                writeJson("data/roadoverlays/recipe/${fullId}.json", [
+                        type: 'minecraft:crafting_shaped', category: 'building',
+                        pattern: [recipe[0..2], recipe[3..5], recipe[6..8]].collect { it.replace('.', ' ') },
+                        key: ingredients,
+                        result: [id: "roadoverlays:${fullId}", count: 1]
+                ])
+            }
+        }
+        colors.each { color ->
+            names["block.roadoverlays.${color}_road_line"] =
+                    "${color.replace('_', ' ').split(' ')*.capitalize().join(' ')} Road Line"
+        }
+        writeJson('assets/roadoverlays/lang/en_us.json', names)
+    }
+}
+
 tasks.named('processResources') {
+    dependsOn tasks.named('generatePaintResources')
+    from(generatedPaintResources)
     from('assets') {
         into 'assets'
+    }
+    from('assets/roadoverlays/textures/paints') {
+        into 'assets/roadoverlays/textures/block'
     }
 }
 

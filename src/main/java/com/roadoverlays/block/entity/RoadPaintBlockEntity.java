@@ -1,7 +1,7 @@
 package com.roadoverlays.block.entity;
 
 import com.roadoverlays.RoadOverlays;
-import com.roadoverlays.block.RoadPaintBlock;
+import com.roadoverlays.block.LegacyRoadPaintBlock;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -18,7 +18,8 @@ public class RoadPaintBlockEntity extends BlockEntity {
 
     public RoadPaintBlockEntity(BlockPos pos, BlockState state) {
         super(RoadOverlays.ROAD_PAINT_BLOCK_ENTITY.get(), pos, state);
-        surfaceHeight = state.getValue(RoadPaintBlock.HEIGHT) / 16.0;
+        surfaceHeight = state.hasProperty(LegacyRoadPaintBlock.HEIGHT)
+                ? state.getValue(LegacyRoadPaintBlock.HEIGHT) / 16.0 : 1;
     }
 
     public double getSurfaceHeight() {

@@ -4,6 +4,7 @@ import com.roadoverlays.block.entity.RoadPaintBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.util.Mth;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.context.BlockPlaceContext;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.level.BlockGetter;
@@ -17,35 +18,31 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
-import net.minecraft.world.level.block.state.properties.IntegerProperty;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.shapes.Shapes;
 
 public class RoadPaintBlock extends Block implements EntityBlock {
-    public static final IntegerProperty HEIGHT = IntegerProperty.create("height", 1, 16);
     private final DyeColor color;
+    private final ResourceLocation texture;
 
-    public RoadPaintBlock(DyeColor color, Properties properties) {
+    public RoadPaintBlock(DyeColor color, String texture, Properties properties) {
         super(properties);
         this.color = color;
+        this.texture = ResourceLocation.fromNamespaceAndPath("roadoverlays", "block/" + texture);
         registerDefaultState(stateDefinition.any()
-                .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)
-                .setValue(HEIGHT, 16));
+                .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
         builder.add(BlockStateProperties.HORIZONTAL_FACING);
-        builder.add(HEIGHT);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
-        int height = Mth.clamp((int) Math.ceil(surfaceHeight(context) * 16 - 1.0e-6), 1, 16);
         return defaultBlockState()
-                .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getOpposite())
-                .setValue(HEIGHT, height);
+                .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getOpposite());
     }
 
     public static double surfaceHeight(BlockPlaceContext context) {
@@ -62,6 +59,10 @@ public class RoadPaintBlock extends Block implements EntityBlock {
         return color;
     }
 
+    public ResourceLocation getPaintTexture() {
+        return texture;
+    }
+
     @Override
     public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
         return new RoadPaintBlockEntity(pos, state);
@@ -75,7 +76,8 @@ public class RoadPaintBlock extends Block implements EntityBlock {
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
         double height = level.getBlockEntity(pos) instanceof RoadPaintBlockEntity paint
-                ? paint.getSurfaceHeight() : state.getValue(HEIGHT) / 16.0;
+                ? paint.getSurfaceHeight() : state.hasProperty(LegacyRoadPaintBlock.HEIGHT)
+                ? state.getValue(LegacyRoadPaintBlock.HEIGHT) / 16.0 : 1;
         return box(0, (height - 1) * 16, 0, 16, 1, 16);
     }
 

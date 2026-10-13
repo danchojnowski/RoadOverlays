@@ -1,0 +1,135 @@
+# id	texture	English name	recipe (3x3, L=line, D=matching dye, .=empty)	identical source textures
+road_line	line_straight_full_0	Road Line	-	
+arrow_0	arrow_0	Arrow	...LL....	
+arrow_4	arrow_4	Arrow Variant 4	.L..L....	
+arrow_diagonal_0	arrow_diagonal_0	Arrow Diagonal	L...L....	
+arrow_diagonal_4	arrow_diagonal_4	Arrow Diagonal Variant 4	....L..D.	
+arrow_line_0	arrow_line_0	Arrow Line	....L.D..	
+bike_0	bike_0	Bike	...DL....	bike_4
+bike_icon_0	bike_icon_0	Bike Icon	.D..L....	bike_icon_4
+bus_0	bus_0	Bus	D...L....	bus_4
+chevron_0	chevron_0	Chevron	....L.L.L	
+chevron_left_a_0	chevron_left_a_0	Chevron Left A	...LL...L	
+chevron_left_a_thin_0	chevron_left_a_thin_0	Chevron Left A Thin	...LLL...	
+chevron_mid_0	chevron_mid_0	Chevron Mid	.L..L..L.	
+chevron_mid_8	chevron_mid_8	Chevron Mid Variant 8	.L..L.L..	
+chevron_mid_left_0	chevron_mid_left_0	Chevron Mid Left	L...L...L	
+chevron_mid_left_8	chevron_mid_left_8	Chevron Mid Left Variant 8	L...L..L.	
+chevron_mid_right_0	chevron_mid_right_0	Chevron Mid Right	L...L.L..	
+chevron_mid_right_8	chevron_mid_right_8	Chevron Mid Right Variant 8	L...LL...	
+chevron_right_a_0	chevron_right_a_0	Chevron Right A	L..LL....	
+chevron_right_a_thin_0	chevron_right_a_thin_0	Chevron Right A Thin	L.L.L....	
+chevron_side_line_0	chevron_side_line_0	Chevron Side Line	LL..L....	
+city_0	city_0	City	....L.L.D	city_4
+clear_0	clear_0	Clear	...DL...L	clear_4
+crossing_paint_0	crossing_paint_0	Crossing Paint	...LL...D	
+ctre_0	ctre_0	Ctre	...LL.D..	ctre_4
+entry_0	entry_0	Entry	...LLD...	entry_4
+give_way_0	give_way_0	Give Way	.D..L..L.	
+hatch_box_0	hatch_box_0	Hatch Box	.D..L.L..	
+junction_a_0	junction_a_0	Junction A	.L..L..D.	
+junction_a_4	junction_a_4	Junction A Variant 4	.L..L.D..	
+junction_a_8	junction_a_8	Junction A Variant 8	.L.DL....	
+junction_b_0	junction_b_0	Junction B	D...L...L	
+junction_b_4	junction_b_4	Junction B Variant 4	D...L..L.	
+junction_b_8	junction_b_8	Junction B Variant 8	D...L.L..	
+junction_filter_left_0	junction_filter_left_0	Junction Filter Left	D...LL...	
+junction_filter_left_empty_0	junction_filter_left_empty_0	Junction Filter Left Empty	D..LL....	
+junction_filter_left_thin_0	junction_filter_left_thin_0	Junction Filter Left Thin	DL..L....	
+junction_filter_right_0	junction_filter_right_0	Junction Filter Right	L...L...D	
+junction_filter_right_empty_0	junction_filter_right_empty_0	Junction Filter Right Empty	L...L..D.	
+junction_filter_right_thin_0	junction_filter_right_thin_0	Junction Filter Right Thin	L...L.D..	
+junction_fork_chevron_mid_0	junction_fork_chevron_mid_0	Junction Fork Chevron Mid	L...LD...	
+junction_fork_chevron_mid_thin_0	junction_fork_chevron_mid_thin_0	Junction Fork Chevron Mid Thin	L..DL....	
+junction_fork_mid_0	junction_fork_mid_0	Junction Fork Mid	L.D.L....	
+junction_fork_mid_thin_0	junction_fork_mid_thin_0	Junction Fork Mid Thin	LD..L....	
+junction_mid_line_connection_0	junction_mid_line_connection_0	Junction Mid Line Connection	....L.D.D	
+junction_mid_line_connection_12	junction_mid_line_connection_12	Junction Mid Line Connection Variant 12	....L.DD.	
+junction_mid_line_connection_4	junction_mid_line_connection_4	Junction Mid Line Connection Variant 4	...DL...D	
+junction_mid_line_connection_8	junction_mid_line_connection_8	Junction Mid Line Connection Variant 8	...DL..D.	
+junction_side_line_connection_0	junction_side_line_connection_0	Junction Side Line Connection	...DL.D..	
+junction_side_line_connection_12	junction_side_line_connection_12	Junction Side Line Connection Variant 12	...DLD...	
+junction_side_line_connection_4	junction_side_line_connection_4	Junction Side Line Connection Variant 4	.D..L..D.	
+junction_side_line_connection_8	junction_side_line_connection_8	Junction Side Line Connection Variant 8	.D..L.D..	
+junction_side_line_connection_thick_thick_0	junction_side_line_connection_thick_thick_0	Junction Side Line Connection Thick Thick	.D.DL....	
+junction_side_line_connection_thick_thick_12	junction_side_line_connection_thick_thick_12	Junction Side Line Connection Thick Thick Variant 12	D...L...D	
+junction_side_line_connection_thick_thick_4	junction_side_line_connection_thick_thick_4	Junction Side Line Connection Thick Thick Variant 4	D...L..D.	
+junction_side_line_connection_thick_thick_8	junction_side_line_connection_thick_thick_8	Junction Side Line Connection Thick Thick Variant 8	D...L.D..	
+junction_side_line_connection_thin_0	junction_side_line_connection_thin_0	Junction Side Line Connection Thin	D...LD...	
+junction_side_line_connection_thin_12	junction_side_line_connection_thin_12	Junction Side Line Connection Thin Variant 12	D..DL....	
+junction_side_line_connection_thin_4	junction_side_line_connection_thin_4	Junction Side Line Connection Thin Variant 4	D.D.L....	
+junction_side_line_connection_thin_8	junction_side_line_connection_thin_8	Junction Side Line Connection Thin Variant 8	DD..L....	
+keep_0	keep_0	Keep	...LL.L.L	keep_4
+lane_0	lane_0	Lane	...LLLL..	lane_4
+left_0	left_0	Left	.L..L.L.L	left_4
+letter_a	paint_letter_ab_0	Letter A	.L..L.LL.	
+letter_b	paint_letter_ab_8	Letter B	.L.LL...L	
+letter_c	paint_letter_cd_0	Letter C	.L.LLL...	
+letter_d	paint_letter_cd_8	Letter D	L...L..LL	
+letter_e	paint_letter_ef_0	Letter E	L...L.L.L	
+letter_f	paint_letter_ef_8	Letter F	L...L.LL.	
+letter_g	paint_letter_gh_0	Letter G	L...LL..L	
+letter_h	paint_letter_gh_8	Letter H	L...LL.L.	
+letter_i	paint_letter_ij_0	Letter I	L...LLL..	
+letter_j	paint_letter_ij_8	Letter J	L..LL...L	
+letter_k	paint_letter_kl_0	Letter K	L..LL..L.	
+letter_l	paint_letter_kl_8	Letter L	L..LL.L..	
+letter_m	paint_letter_mn_0	Letter M	L..LLL...	
+letter_n	paint_letter_mn_8	Letter N	L.L.L..L.	
+letter_o	paint_letter_op_0	Letter O	L.L.L.L..	
+letter_p	paint_letter_op_8	Letter P	L.LLL....	
+letter_q	paint_letter_qr_0	Letter Q	LL..L...L	
+letter_r	paint_letter_qr_8	Letter R	LL..L..L.	
+letter_s	paint_letter_st_0	Letter S	LL..L.L..	
+letter_t	paint_letter_st_8	Letter T	LL..LL...	
+letter_u	paint_letter_uv_0	Letter U	LL.LL....	
+letter_v	paint_letter_uv_8	Letter V	LLL.L....	
+letter_w	paint_letter_wx_0	Letter W	....L.LDL	
+letter_x	paint_letter_wx_8	Letter X	...DL.L.L	
+letter_y	paint_letter_yz_0	Letter Y	...DLLL..	
+letter_z	paint_letter_yz_8	Letter Z	...LL..DL	
+line_crossing_diagonal_0	line_crossing_diagonal_0	Line Crossing Diagonal	...LL.D.L	
+line_far_side_0	line_far_side_0	Line Far Side	...LL.L.D	line_far_side_6
+line_far_side_thick_0	line_far_side_thick_0	Line Far Side Thick	...LLDL..	line_far_side_thick_6
+line_filter_lane_0	line_filter_lane_0	Line Filter Lane	...LLL.D.	
+line_middle_dash_double_0	line_middle_dash_double_0	Line Middle Dash Double	...LLLD..	
+line_middle_half_double	line_middle_half_double	Line Middle Half Double	.D..L.L.L	line_middle_half_double_0
+line_middle_short_0	line_middle_short_0	Line Middle Short	.D..L.LL.	
+line_side_double_0	line_side_double_0	Line Side Double	.D.LL...L	line_side_double_6
+line_side_double_thick_0	line_side_double_thick_0	Line Side Double Thick	.D.LLL...	line_side_double_thick_6
+line_side_short_0	line_side_short_0	Line Side Short	.L..L.DL.	
+line_side_single_0	line_side_single_0	Line Side Single	.L..L.L.D	line_side_single_6
+line_side_single_thick_0	line_side_single_thick_0	Line Side Single Thick	.L..L.LD.	line_side_single_thick_6
+line_straight_double_0	line_straight_double_0	Line Straight Double	.L.DL...L	
+line_straight_double_2	line_straight_double_2	Line Straight Double Variant 2	.L.DL..L.	
+line_straight_double_thick_0	line_straight_double_thick_0	Line Straight Double Thick	.L.DL.L..	
+line_straight_double_thick_2	line_straight_double_thick_2	Line Straight Double Thick Variant 2	.L.LL...D	
+line_straight_full_2	line_straight_full_2	Line Straight Full Variant 2	.L.LLD...	
+line_straight_thick_0	line_straight_thick_0	Line Straight Thick	D...L..LL	
+line_straight_thick_2	line_straight_thick_2	Line Straight Thick Variant 2	D...L.L.L	
+line_thin_crossing_0	line_thin_crossing_0	Line Thin Crossing	D...L.LL.	
+merge_arrow_0	merge_arrow_0	Merge Arrow	D...LL..L	
+no_0	no_0	No	D...LL.L.	no_4
+number_0	paint_letter_01_0	Number 0	D...LLL..	
+number_1	paint_letter_01_8	Number 1	D..LL...L	
+number_2	paint_letter_23_0	Number 2	D..LL..L.	
+number_3	paint_letter_23_8	Number 3	D..LL.L..	
+number_4	paint_letter_45_0	Number 4	D..LLL...	
+number_5	paint_letter_45_8	Number 5	D.L.L.L..	
+number_6	paint_letter_67_0	Number 6	D.LLL....	
+number_7	paint_letter_67_8	Number 7	DL..L...L	
+number_8	paint_letter_89_0	Number 8	DL..L..L.	
+number_9	paint_letter_89_8	Number 9	DL..L.L..	
+only_0	only_0	Only	DL..LL...	only_4
+pedestrian_0	pedestrian_0	Pedestrian	L...L..DL	
+right_0	right_0	Right	L...L..LD	right_4
+slow_0	slow_0	Slow	L...L.D.L	slow_4
+stop_0	stop_0	Stop	L...L.DL.	stop_4
+symbol_exclamation_mark	paint_letter_punct_question_exclamation_8	Exclamation Mark	L...L.L.D	
+symbol_hash	paint_letter_punct_hash_slash_0	Hash	L...L.LD.	
+symbol_question_mark	paint_letter_punct_question_exclamation_0	Question Mark	L...LD..L	
+symbol_slash	paint_letter_punct_hash_slash_8	Slash	L...LD.L.	
+taxi_0	taxi_0	Taxi	L...LDL..	taxi_4
+town_0	town_0	Town	L...LL..D	town_4
+turn_0	turn_0	Turn	L...LL.D.	turn_4
+wheelchair_icon_0	wheelchair_icon_0	Wheelchair Icon	L...LLD..	
