@@ -4,6 +4,7 @@ import com.roadoverlays.RoadOverlays;
 import com.roadoverlays.block.AngledPaint;
 import com.roadoverlays.block.CurvePaint;
 import com.roadoverlays.block.LegacyRoadPaintBlock;
+import com.roadoverlays.block.LineStyle;
 import com.roadoverlays.block.RoadPaintBlock;
 import com.roadoverlays.block.entity.RoadPaintBlockEntity;
 import com.roadoverlays.client.ApplicatorSettingsScreen;
@@ -30,6 +31,9 @@ import net.minecraft.world.phys.shapes.VoxelShape;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Arrays;
 import java.util.UUID;
 
 /** Two-click placement of a continuous or dashed road marking using carried paint. */
@@ -154,7 +158,8 @@ public final class PaintApplicatorItem extends Item {
             int dz = end.getZ() - start.support.getZ();
             facing = Math.abs(dx) > Math.abs(dz) ? Direction.EAST : Direction.NORTH;
         }
-        LinkedHashMap<BlockPos, Vec3> tiles = start.curve ? curveTiles(start, end, circle)
+        LinkedHashMap<BlockPos, Vec3> tiles = start.curve
+                ? curveTiles(start, end, circle, block.getCurvePaint().style())
                 : straightTiles(start, end, normal);
         int placed = 0;
         int index = 0;
@@ -229,7 +234,7 @@ public final class PaintApplicatorItem extends Item {
     }
 
     private static LinkedHashMap<BlockPos, Vec3> curveTiles(Start start, BlockPos end,
-                                                             CurvePaint.Parameters circle) {
+                                                             CurvePaint.Parameters circle, LineStyle style) {
         double first = Math.atan2(start.centerZ - circle.centerZ(), start.centerX - circle.centerX());
         double last = Math.atan2(end.getZ() + 0.5 - circle.centerZ(),
                 end.getX() + 0.5 - circle.centerX());
@@ -242,13 +247,87 @@ public final class PaintApplicatorItem extends Item {
                 : -(((-difference % fullTurn) + fullTurn) % fullTurn);
         int steps = Math.min(MAX_TILES * 16, (int) Math.ceil(Math.abs(sweep) * start.radius * 16));
         LinkedHashMap<BlockPos, Vec3> result = new LinkedHashMap<>();
+        Set<BlockPos> checked = new HashSet<>();
         for (int i = 0; i <= steps; i++) {
             double angle = first + sweep * (steps == 0 ? 0 : i / (double) steps);
-            addTile(result, start.support.getY(), circle.centerX() + Math.cos(angle) * start.radius,
-                    circle.centerZ() + Math.sin(angle) * start.radius);
+            double x = circle.centerX() + Math.cos(angle) * start.radius;
+            double z = circle.centerZ() + Math.sin(angle) * start.radius;
+            int tileX = (int) Math.floor(x);
+            int tileZ = (int) Math.floor(z);
+            // A double or thick stripe can enter a neighboring tile without its
+            // centerline entering that tile. Check the swept paint area itself.
+            for (int ox = -1; ox <= 1; ox++) {
+                for (int oz = -1; oz <= 1; oz++) {
+                    BlockPos pos = new BlockPos(tileX + ox, start.support.getY(), tileZ + oz);
+                    if (!checked.add(pos) || !curveIntersectsTile(circle, style, first, sweep, pos)) continue;
+                    double sampleX = Math.clamp(x, pos.getX() + 1.0e-4, pos.getX() + 1 - 1.0e-4);
+                    double sampleZ = Math.clamp(z, pos.getZ() + 1.0e-4, pos.getZ() + 1 - 1.0e-4);
+                    result.put(pos, new Vec3(sampleX, pos.getY() + 1, sampleZ));
+                }
+            }
             if (result.size() >= MAX_TILES) break;
         }
         return result;
+    }
+
+    private static boolean curveIntersectsTile(CurvePaint.Parameters circle, LineStyle style,
+                                               double first, double sweep, BlockPos pos) {
+        double cx = circle.centerX();
+        double cz = circle.centerZ();
+        double x0 = pos.getX();
+        double z0 = pos.getZ();
+        double x1 = x0 + 1;
+        double z1 = z0 + 1;
+        double nearestX = Math.clamp(cx, x0, x1);
+        double nearestZ = Math.clamp(cz, z0, z1);
+        double minimum = Math.hypot(cx - nearestX, cz - nearestZ);
+        double maximum = Math.max(Math.max(Math.hypot(cx - x0, cz - z0), Math.hypot(cx - x0, cz - z1)),
+                Math.max(Math.hypot(cx - x1, cz - z0), Math.hypot(cx - x1, cz - z1)));
+        boolean radial = ringIntersectsTile(circle.radius(), style.halfWidth(), minimum, maximum);
+        if (style.halfSpacing() > 0) {
+            radial |= ringIntersectsTile(circle.radius() - style.halfSpacing(), style.halfWidth(), minimum, maximum)
+                    || ringIntersectsTile(circle.radius() + style.halfSpacing(), style.halfWidth(), minimum, maximum);
+        }
+        if (!radial) return false;
+        if (cx >= x0 && cx <= x1 && cz >= z0 && cz <= z1) return true;
+
+        double[] corners = {
+                positiveAngle(Math.atan2(z0 - cz, x0 - cx)),
+                positiveAngle(Math.atan2(z1 - cz, x0 - cx)),
+                positiveAngle(Math.atan2(z0 - cz, x1 - cx)),
+                positiveAngle(Math.atan2(z1 - cz, x1 - cx))
+        };
+        Arrays.sort(corners);
+        double fullTurn = Math.PI * 2;
+        double largestGap = -1;
+        int afterGap = 0;
+        for (int i = 0; i < corners.length; i++) {
+            double next = i == corners.length - 1 ? corners[0] + fullTurn : corners[i + 1];
+            double gap = next - corners[i];
+            if (gap > largestGap) {
+                largestGap = gap;
+                afterGap = (i + 1) % corners.length;
+            }
+        }
+        double tileStart = corners[afterGap];
+        double tileEnd = tileStart + fullTurn - largestGap;
+        double arcStart = positiveAngle(sweep >= 0 ? first : first + sweep);
+        double arcEnd = arcStart + Math.abs(sweep);
+        for (int turn = -1; turn <= 1; turn++) {
+            double shifted = tileStart + turn * fullTurn;
+            if (shifted <= arcEnd + 1.0e-6 && shifted + tileEnd - tileStart >= arcStart - 1.0e-6) return true;
+        }
+        return false;
+    }
+
+    private static boolean ringIntersectsTile(double radius, double halfWidth, double minimum, double maximum) {
+        return radius + halfWidth >= minimum - 1.0e-6
+                && radius - halfWidth <= maximum + 1.0e-6;
+    }
+
+    private static double positiveAngle(double angle) {
+        double fullTurn = Math.PI * 2;
+        return ((angle % fullTurn) + fullTurn) % fullTurn;
     }
 
     private static void addTile(LinkedHashMap<BlockPos, Vec3> tiles, int y, double x, double z) {

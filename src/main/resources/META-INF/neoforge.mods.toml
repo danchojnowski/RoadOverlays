@@ -4,7 +4,7 @@ license="All Rights Reserved"
 
 [[mods]]
 modId="roadoverlays"
-version="1.6.2"
+version="1.6.3"
 displayName="Road Overlays"
 description='''A simple road paint and overlay mod.'''
 
