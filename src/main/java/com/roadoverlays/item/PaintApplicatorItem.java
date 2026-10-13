@@ -28,12 +28,12 @@ import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.Vec3;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.HashSet;
 import java.util.Set;
-import java.util.Arrays;
 import java.util.UUID;
 
 /** Two-click placement of a continuous or dashed road marking using carried paint. */
@@ -160,7 +160,8 @@ public final class PaintApplicatorItem extends Item {
         }
         LinkedHashMap<BlockPos, Vec3> tiles = start.curve
                 ? curveTiles(start, end, circle, block.getCurvePaint().style())
-                : straightTiles(start, end, normal);
+                : straightTiles(start, end, normal,
+                block.getAngledPaint() == null ? null : block.getAngledPaint().style());
         int placed = 0;
         int index = 0;
         int cycle = Math.clamp(placeCount, 1, MAX_PATTERN) + Math.clamp(skipCount, 0, MAX_PATTERN);
@@ -195,7 +196,7 @@ public final class PaintApplicatorItem extends Item {
     }
 
     private static LinkedHashMap<BlockPos, Vec3> straightTiles(Start start, BlockPos end,
-                                                                AngledPaint.Normal normal) {
+                                                                AngledPaint.Normal normal, LineStyle style) {
         double dx = end.getX() - start.support.getX();
         double dz = end.getZ() - start.support.getZ();
         if (normal != null) {
@@ -212,12 +213,81 @@ public final class PaintApplicatorItem extends Item {
         }
         int steps = Math.min(MAX_TILES * 16, (int) Math.ceil(Math.hypot(dx, dz) * 16));
         LinkedHashMap<BlockPos, Vec3> result = new LinkedHashMap<>();
+        Set<BlockPos> checked = normal == null ? null : new HashSet<>();
+        double distance = normal == null ? 0 : dx * -normal.z() + dz * normal.x();
         for (int i = 0; i <= steps; i++) {
             double t = steps == 0 ? 0 : i / (double) steps;
-            addTile(result, start.support.getY(), start.centerX + dx * t, start.centerZ + dz * t);
+            double x = start.centerX + dx * t;
+            double z = start.centerZ + dz * t;
+            if (normal == null) {
+                addTile(result, start.support.getY(), x, z);
+            } else {
+                int tileX = (int) Math.floor(x);
+                int tileZ = (int) Math.floor(z);
+                for (int ox = -1; ox <= 1; ox++) {
+                    for (int oz = -1; oz <= 1; oz++) {
+                        BlockPos pos = new BlockPos(tileX + ox, start.support.getY(), tileZ + oz);
+                        if (!checked.add(pos) || !lineIntersectsTile(start, normal, style, distance, pos)) continue;
+                        double sampleX = Math.clamp(x, pos.getX() + 1.0e-4, pos.getX() + 1 - 1.0e-4);
+                        double sampleZ = Math.clamp(z, pos.getZ() + 1.0e-4, pos.getZ() + 1 - 1.0e-4);
+                        result.put(pos, new Vec3(sampleX, pos.getY() + 1, sampleZ));
+                    }
+                }
+            }
             if (result.size() >= MAX_TILES) break;
         }
         return result;
+    }
+
+    private static boolean lineIntersectsTile(Start start, AngledPaint.Normal normal,
+                                              LineStyle style, double distance, BlockPos pos) {
+        double nx = normal.x();
+        double nz = normal.z();
+        double tx = -nz;
+        double tz = nx;
+        double minAcross = Double.POSITIVE_INFINITY;
+        double maxAcross = Double.NEGATIVE_INFINITY;
+        double minAlong = Double.POSITIVE_INFINITY;
+        double maxAlong = Double.NEGATIVE_INFINITY;
+        for (int x = pos.getX(); x <= pos.getX() + 1; x++) {
+            for (int z = pos.getZ(); z <= pos.getZ() + 1; z++) {
+                double across = nx * (x - start.centerX) + nz * (z - start.centerZ);
+                double along = tx * (x - start.centerX) + tz * (z - start.centerZ);
+                minAcross = Math.min(minAcross, across);
+                maxAcross = Math.max(maxAcross, across);
+                minAlong = Math.min(minAlong, along);
+                maxAlong = Math.max(maxAlong, along);
+            }
+        }
+        if (maxAlong < Math.min(0, distance) - 1.0e-6
+                || minAlong > Math.max(0, distance) + 1.0e-6) return false;
+        if (style.halfSpacing() == 0) {
+            return stripeIntersectsTile(start, normal, pos, distance,
+                    0, style.halfWidth(), minAcross, maxAcross);
+        }
+        return stripeIntersectsTile(start, normal, pos, distance,
+                -style.halfSpacing(), style.halfWidth(), minAcross, maxAcross)
+                || stripeIntersectsTile(start, normal, pos, distance,
+                style.halfSpacing(), style.halfWidth(), minAcross, maxAcross);
+    }
+
+    private static boolean stripeIntersectsTile(Start start, AngledPaint.Normal normal, BlockPos pos,
+                                                double distance, double offset, double halfWidth,
+                                                double minimum, double maximum) {
+        if (offset + halfWidth < minimum - 1.0e-6
+                || offset - halfWidth > maximum + 1.0e-6) return false;
+        double tx = -normal.z();
+        double tz = normal.x();
+        double firstX = start.centerX + normal.x() * offset;
+        double firstZ = start.centerZ + normal.z() * offset;
+        double lastX = firstX + tx * distance;
+        double lastZ = firstZ + tz * distance;
+        double reachX = Math.abs(normal.x()) * halfWidth;
+        double reachZ = Math.abs(normal.z()) * halfWidth;
+        return pos.getX() + 1 >= Math.min(firstX, lastX) - reachX - 1.0e-6
+                && pos.getX() <= Math.max(firstX, lastX) + reachX + 1.0e-6
+                && pos.getZ() + 1 >= Math.min(firstZ, lastZ) - reachZ - 1.0e-6
+                && pos.getZ() <= Math.max(firstZ, lastZ) + reachZ + 1.0e-6;
     }
 
     private static CurvePaint.Parameters circleThroughEnds(Start start, BlockPos end) {
@@ -283,11 +353,10 @@ public final class PaintApplicatorItem extends Item {
         double minimum = Math.hypot(cx - nearestX, cz - nearestZ);
         double maximum = Math.max(Math.max(Math.hypot(cx - x0, cz - z0), Math.hypot(cx - x0, cz - z1)),
                 Math.max(Math.hypot(cx - x1, cz - z0), Math.hypot(cx - x1, cz - z1)));
-        boolean radial = ringIntersectsTile(circle.radius(), style.halfWidth(), minimum, maximum);
-        if (style.halfSpacing() > 0) {
-            radial |= ringIntersectsTile(circle.radius() - style.halfSpacing(), style.halfWidth(), minimum, maximum)
-                    || ringIntersectsTile(circle.radius() + style.halfSpacing(), style.halfWidth(), minimum, maximum);
-        }
+        boolean radial = style.halfSpacing() == 0
+                ? ringIntersectsTile(circle.radius(), style.halfWidth(), minimum, maximum)
+                : ringIntersectsTile(circle.radius() - style.halfSpacing(), style.halfWidth(), minimum, maximum)
+                || ringIntersectsTile(circle.radius() + style.halfSpacing(), style.halfWidth(), minimum, maximum);
         if (!radial) return false;
         if (cx >= x0 && cx <= x1 && cz >= z0 && cz <= z1) return true;
 
