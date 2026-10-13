@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " D ",
+    " D ",
+    " D "
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:light_blue_dye"
+    }
+  },
+  "result": {
+    "id": "roadoverlays:light_blue_road_line",
+    "count": 1
+  }
+}

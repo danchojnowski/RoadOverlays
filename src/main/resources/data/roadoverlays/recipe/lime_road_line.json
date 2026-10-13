@@ -1,0 +1,18 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "building",
+  "pattern": [
+    " D ",
+    " D ",
+    " D "
+  ],
+  "key": {
+    "D": {
+      "item": "minecraft:lime_dye"
+    }
+  },
+  "result": {
+    "id": "roadoverlays:lime_road_line",
+    "count": 1
+  }
+}
