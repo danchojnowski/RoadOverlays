@@ -1,7 +1,9 @@
 {
+  "render_type": "minecraft:cutout",
+  "ambientocclusion": false,
   "textures": {
-    "paint": "roadoverlays:paints/line_straight_full_0",
-    "particle": "roadoverlays:paints/line_straight_full_0"
+    "paint": "roadoverlays:block/white_road_line",
+    "particle": "roadoverlays:block/white_road_line"
   },
   "elements": [
     {

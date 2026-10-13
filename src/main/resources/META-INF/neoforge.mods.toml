@@ -18,6 +18,6 @@ side="BOTH"
 [[dependencies.roadoverlays]]
 modId="neoforge"
 type="required"
-versionRange="[21.1.252,)"
+versionRange="[21.1.248,21.2)"
 ordering="NONE"
 side="BOTH"

@@ -1,4 +1,19 @@
 {
   "block.roadoverlays.white_road_line": "White Road Line",
+  "block.roadoverlays.orange_road_line": "Orange Road Line",
+  "block.roadoverlays.magenta_road_line": "Magenta Road Line",
+  "block.roadoverlays.light_blue_road_line": "Light Blue Road Line",
+  "block.roadoverlays.yellow_road_line": "Yellow Road Line",
+  "block.roadoverlays.lime_road_line": "Lime Road Line",
+  "block.roadoverlays.pink_road_line": "Pink Road Line",
+  "block.roadoverlays.gray_road_line": "Gray Road Line",
+  "block.roadoverlays.light_gray_road_line": "Light Gray Road Line",
+  "block.roadoverlays.cyan_road_line": "Cyan Road Line",
+  "block.roadoverlays.purple_road_line": "Purple Road Line",
+  "block.roadoverlays.blue_road_line": "Blue Road Line",
+  "block.roadoverlays.brown_road_line": "Brown Road Line",
+  "block.roadoverlays.green_road_line": "Green Road Line",
+  "block.roadoverlays.red_road_line": "Red Road Line",
+  "block.roadoverlays.black_road_line": "Black Road Line",
   "itemGroup.roadoverlays": "Road Overlays"
 }

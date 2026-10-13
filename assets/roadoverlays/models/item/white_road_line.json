@@ -1,3 +1,6 @@
 {
-  "parent": "roadoverlays:block/white_road_line"
+  "parent": "minecraft:item/generated",
+  "textures": {
+    "layer0": "roadoverlays:block/white_road_line"
+  }
 }

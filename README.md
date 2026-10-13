@@ -1,6 +1,6 @@
 # Road Overlays
 
-A Minecraft 1.21.1 NeoForge mod prototype for placing road paint over blocks.
+A Minecraft 1.21.1 NeoForge mod prototype for placing road paint over blocks. Requires NeoForge 21.1.248 or newer in the 21.1 series.
 
 ## Build and run
 
@@ -18,6 +18,8 @@ Launch the development client with:
 
 The first Gradle run downloads Gradle and the NeoForge development dependencies.
 
-## Prototype contents
+## Available paints
 
-The creative tab contains a white straight road line. Place it on top of a block; it has no collision and can be removed normally. The paint texture resources are in `assets/roadoverlays/textures/paints/`.
+The Road Overlays creative tab contains a straight road line in all 16 Minecraft dye colors: white, orange, magenta, light blue, yellow, lime, pink, gray, light gray, cyan, purple, blue, brown, green, red, and black. Place a line on top of a block and rotate it by facing a different direction. It has no collision and can be removed normally.
+
+All colors reuse the supplied white `line_straight_full_0.png` paint shape. The other paint artwork in `assets/roadoverlays/textures/paints/` is not yet available as placeable items.
