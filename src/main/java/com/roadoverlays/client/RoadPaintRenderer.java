@@ -43,6 +43,15 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
             poseStack.popPose();
             return;
         }
+        AngledPaint angled = block.getAngledPaint();
+        if (angled != null) {
+            TextureAtlasSprite whitePixel = Minecraft.getInstance()
+                    .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(WHITE_PIXEL);
+            AdjustableLineRenderer.render(paint, angled, poseStack.last(), vertices,
+                    whitePixel, red, green, blue, packedLight, packedOverlay);
+            poseStack.popPose();
+            return;
+        }
         TextureAtlasSprite sprite = Minecraft.getInstance()
                 .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(block.getPaintTexture());
         Direction facing = paint.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
@@ -55,24 +64,10 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
         PoseStack.Pose pose = poseStack.last();
-        float u0 = sprite.getU0();
-        float u1 = sprite.getU1();
-        float v0 = sprite.getV0();
-        float v1 = sprite.getV1();
-        AngledPaint angled = block.getAngledPaint();
-        if (angled != null) {
-            float du = u1 - u0;
-            float dv = v1 - v0;
-            double offset = paint.getLineOffset();
-            u0 = sprite.getU0() + du * (float) (0.375 - offset * angled.normalX() / 4);
-            u1 = u0 + du * 0.25f;
-            v0 = sprite.getV0() + dv * (float) (0.375 - offset * angled.normalZ() / 4);
-            v1 = v0 + dv * 0.25f;
-        }
-        vertex(vertices, pose, -0.5f, -0.5f, u0, v0, red, green, blue, packedLight, packedOverlay);
-        vertex(vertices, pose, -0.5f, 0.5f, u0, v1, red, green, blue, packedLight, packedOverlay);
-        vertex(vertices, pose, 0.5f, 0.5f, u1, v1, red, green, blue, packedLight, packedOverlay);
-        vertex(vertices, pose, 0.5f, -0.5f, u1, v0, red, green, blue, packedLight, packedOverlay);
+        vertex(vertices, pose, -0.5f, -0.5f, sprite.getU0(), sprite.getV0(), red, green, blue, packedLight, packedOverlay);
+        vertex(vertices, pose, -0.5f, 0.5f, sprite.getU0(), sprite.getV1(), red, green, blue, packedLight, packedOverlay);
+        vertex(vertices, pose, 0.5f, 0.5f, sprite.getU1(), sprite.getV1(), red, green, blue, packedLight, packedOverlay);
+        vertex(vertices, pose, 0.5f, -0.5f, sprite.getU1(), sprite.getV0(), red, green, blue, packedLight, packedOverlay);
         poseStack.popPose();
     }
 

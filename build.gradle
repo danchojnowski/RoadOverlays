@@ -32,9 +32,25 @@ tasks.register('generatePaintResources') {
                       'light_gray', 'cyan', 'purple', 'blue', 'brown', 'green', 'red', 'black']
         def names = [
                 'itemGroup.roadoverlays': 'Road Overlays',
-                'message.roadoverlays.curve_radius': 'Curve radius: %s blocks',
                 'tooltip.roadoverlays.curve_radius': 'Radius: %s blocks',
-                'tooltip.roadoverlays.curve_controls': 'Right-click without placing to increase; sneak to decrease. Sneak while placing to turn left.'
+                'tooltip.roadoverlays.curve_controls': 'Right-click without placing to open settings. Sneak while placing to turn left.',
+                'tooltip.roadoverlays.line_angle': 'Angle: %s°',
+                'tooltip.roadoverlays.line_controls': 'Right-click without placing to open angle settings.',
+                'gui.roadoverlays.curve_title': 'Curve Radius',
+                'gui.roadoverlays.angle_title': 'Diagonal Angle',
+                'gui.roadoverlays.curve_value': 'Radius: %s blocks',
+                'gui.roadoverlays.angle_value': 'Angle: %s°',
+                'item.roadoverlays.paint_applicator': 'Paint Applicator',
+                'gui.roadoverlays.applicator_title': 'Paint Applicator Pattern',
+                'gui.roadoverlays.applicator_place': 'Place %s blocks',
+                'gui.roadoverlays.applicator_skip': 'Skip %s blocks',
+                'tooltip.roadoverlays.applicator_pattern': 'Place %s, skip %s',
+                'tooltip.roadoverlays.applicator_use': 'Carries paint from your inventory. Offhand selects the type. Click start and end blocks.',
+                'message.roadoverlays.applicator_inventory': 'Carry a road line paint in your inventory.',
+                'message.roadoverlays.applicator_start': 'Start selected. Click an end block; click the start again to cancel.',
+                'message.roadoverlays.applicator_cancel': 'Paint run cancelled.',
+                'message.roadoverlays.applicator_height': 'Start and end must be at the same block height.',
+                'message.roadoverlays.applicator_placed': 'Placed %s paint blocks.'
         ]
         def writeJson = { String path, Object value ->
             def target = new File(root, path)
@@ -102,18 +118,14 @@ tasks.register('generatePaintResources') {
                 throw new GradleException("Invalid recipe for ${id}")
             }
             def sourceLine = fields.length > 5 && fields[5] ? fields[5] : 'road_line'
-            def angled = id =~ /^angled_line_(single|double|thick|double_thick)_(22_5|30|45|60|67_5)$/
-            if (angled.matches()) {
-                def angle = angled[0][2].replace('_', '.') as double
-                drawAngledLine(texture, angled[0][1], angle, 64)
-                drawAngledLine(texture + '_canvas', angled[0][1], angle, 256)
-            }
+            def adjustable = id =~ /^angled_line_(single|double|thick|double_thick)$/
+            if (adjustable.matches()) drawAngledLine(texture, adjustable[0][1], 45, 64)
             def curved = id =~ /^curved_line_(single|double|thick|double_thick)$/
             if (curved.matches()) drawCurvedLine(texture, curved[0][1])
             writeJson("assets/roadoverlays/models/block/${id}.json", [
                     render_type: 'minecraft:cutout', ambientocclusion: false,
                     textures: [paint: "roadoverlays:block/${texture}",
-                               particle: "roadoverlays:block/${texture}${angled.matches() ? '_canvas' : ''}"],
+                               particle: "roadoverlays:block/${texture}"],
                     elements: [[from: [0, 0, 0], to: [16, 1, 16],
                                 faces: [up: [texture: '#paint', tintindex: 0]]]]
             ])
@@ -130,7 +142,7 @@ tasks.register('generatePaintResources') {
                         type: 'minecraft:crafting_shaped', category: 'building',
                         pattern: [recipe[0..2], recipe[3..5], recipe[6..8]].collect { it.replace('.', ' ') },
                         key: ingredients,
-                        result: [id: "roadoverlays:${fullId}", count: 1]
+                        result: [id: "roadoverlays:${fullId}", count: id.contains('line') ? 6 : 1]
                 ])
             }
         }

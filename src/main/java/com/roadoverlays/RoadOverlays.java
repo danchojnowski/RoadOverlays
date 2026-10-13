@@ -3,9 +3,13 @@ package com.roadoverlays;
 import com.mojang.serialization.Codec;
 import com.roadoverlays.block.RoadPaintBlock;
 import com.roadoverlays.block.CurvePaint;
+import com.roadoverlays.block.AngledPaint;
 import com.roadoverlays.block.LegacyRoadPaintBlock;
 import com.roadoverlays.block.entity.RoadPaintBlockEntity;
 import com.roadoverlays.item.RoadPaintItem;
+import com.roadoverlays.item.PaintApplicatorItem;
+import com.roadoverlays.network.PaintSettingsPayload;
+import com.roadoverlays.network.ApplicatorSettingsPayload;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.network.chat.Component;
@@ -37,6 +41,18 @@ public class RoadOverlays {
             DATA_COMPONENTS.registerComponentType("curve_radius", builder -> builder
                     .persistent(Codec.intRange(1, CurvePaint.MAX_RADIUS))
                     .networkSynchronized(ByteBufCodecs.VAR_INT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> LINE_ANGLE =
+            DATA_COMPONENTS.registerComponentType("line_angle", builder -> builder
+                    .persistent(Codec.intRange(0, AngledPaint.MAX_ANGLE))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> APPLICATOR_PLACE =
+            DATA_COMPONENTS.registerComponentType("applicator_place", builder -> builder
+                    .persistent(Codec.intRange(1, PaintApplicatorItem.MAX_PATTERN))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT));
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<Integer>> APPLICATOR_SKIP =
+            DATA_COMPONENTS.registerComponentType("applicator_skip", builder -> builder
+                    .persistent(Codec.intRange(0, PaintApplicatorItem.MAX_PATTERN))
+                    .networkSynchronized(ByteBufCodecs.VAR_INT));
     public static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITY_TYPES =
             DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, MOD_ID);
     public static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS =
@@ -46,6 +62,8 @@ public class RoadOverlays {
     public static final Map<DyeColor, Supplier<Item>> ROAD_LINE_ITEMS = new EnumMap<>(DyeColor.class);
     public static final Map<String, Map<DyeColor, Supplier<Block>>> PAINT_BLOCKS = new LinkedHashMap<>();
     public static final Map<String, Map<DyeColor, Supplier<Item>>> PAINT_ITEMS = new LinkedHashMap<>();
+    public static final Supplier<Item> PAINT_APPLICATOR = ITEMS.register("paint_applicator",
+            () -> new PaintApplicatorItem(new Item.Properties().stacksTo(1)));
 
     static {
         for (PaintCatalog.Design design : PaintCatalog.DESIGNS) {
@@ -82,6 +100,7 @@ public class RoadOverlays {
                     .title(Component.translatable("itemGroup.roadoverlays"))
                     .icon(() -> WHITE_ROAD_LINE_ITEM.get().getDefaultInstance())
                     .displayItems((parameters, output) -> {
+                        output.accept(PAINT_APPLICATOR.get());
                         for (Map<DyeColor, Supplier<Item>> items : PAINT_ITEMS.values()) {
                             for (DyeColor color : DyeColor.values()) {
                                 output.accept(items.get(color).get());
@@ -91,6 +110,8 @@ public class RoadOverlays {
                     .build());
 
     public RoadOverlays(IEventBus modEventBus) {
+        modEventBus.addListener(PaintSettingsPayload::register);
+        modEventBus.addListener(ApplicatorSettingsPayload::register);
         BLOCKS.register(modEventBus);
         ITEMS.register(modEventBus);
         DATA_COMPONENTS.register(modEventBus);

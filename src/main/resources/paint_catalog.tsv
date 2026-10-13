@@ -133,27 +133,11 @@ taxi_0	taxi_0	Taxi	L...LDL..	taxi_4
 town_0	town_0	Town	L...LL..D	town_4
 turn_0	turn_0	Turn	L...LL.D.	turn_4
 wheelchair_icon_0	wheelchair_icon_0	Wheelchair Icon	L...LLD..	
-angled_line_single_22_5	angled_line_single_22_5	Road Line 22.5°	DDD.L....		road_line
-angled_line_single_30	angled_line_single_30	Road Line 30°	DD.DL....		road_line
-angled_line_single_45	angled_line_single_45	Road Line 45°	DD..LD...		road_line
-angled_line_single_60	angled_line_single_60	Road Line 60°	DD..L.D..		road_line
-angled_line_single_67_5	angled_line_single_67_5	Road Line 67.5°	DD..L..D.		road_line
-angled_line_double_22_5	angled_line_double_22_5	Double Road Line 22.5°	D...L....		line_straight_double_0
-angled_line_double_30	angled_line_double_30	Double Road Line 30°	.D..L....		line_straight_double_0
-angled_line_double_45	angled_line_double_45	Double Road Line 45°	...DL....		line_straight_double_0
-angled_line_double_60	angled_line_double_60	Double Road Line 60°	....L.D..		line_straight_double_0
-angled_line_double_67_5	angled_line_double_67_5	Double Road Line 67.5°	....L..D.		line_straight_double_0
-angled_line_thick_22_5	angled_line_thick_22_5	Thick Road Line 22.5°	D...L....		line_straight_thick_0
-angled_line_thick_30	angled_line_thick_30	Thick Road Line 30°	.D..L....		line_straight_thick_0
-angled_line_thick_45	angled_line_thick_45	Thick Road Line 45°	...DL....		line_straight_thick_0
-angled_line_thick_60	angled_line_thick_60	Thick Road Line 60°	....L.D..		line_straight_thick_0
-angled_line_thick_67_5	angled_line_thick_67_5	Thick Road Line 67.5°	....L..D.		line_straight_thick_0
-angled_line_double_thick_22_5	angled_line_double_thick_22_5	Double Thick Road Line 22.5°	D...L....		line_straight_double_thick_0
-angled_line_double_thick_30	angled_line_double_thick_30	Double Thick Road Line 30°	.D..L....		line_straight_double_thick_0
-angled_line_double_thick_45	angled_line_double_thick_45	Double Thick Road Line 45°	...DL....		line_straight_double_thick_0
-angled_line_double_thick_60	angled_line_double_thick_60	Double Thick Road Line 60°	....L.D..		line_straight_double_thick_0
-angled_line_double_thick_67_5	angled_line_double_thick_67_5	Double Thick Road Line 67.5°	....L..D.		line_straight_double_thick_0
-curved_line_single	curved_line_single	Curved Road Line	D...L....		angled_line_single_45
-curved_line_double	curved_line_double	Curved Double Road Line	D...L....		angled_line_double_45
-curved_line_thick	curved_line_thick	Curved Thick Road Line	D...L....		angled_line_thick_45
-curved_line_double_thick	curved_line_double_thick	Curved Double Thick Road Line	D...L....		angled_line_double_thick_45
+angled_line_single	angled_line_single	Adjustable Road Line	DD..L....		road_line
+angled_line_double	angled_line_double	Adjustable Double Road Line	...DL....		line_straight_double_0
+angled_line_thick	angled_line_thick	Adjustable Thick Road Line	...DL....		line_straight_thick_0
+angled_line_double_thick	angled_line_double_thick	Adjustable Double Thick Road Line	...DL....		line_straight_double_thick_0
+curved_line_single	curved_line_single	Curved Road Line	D...L....		angled_line_single
+curved_line_double	curved_line_double	Curved Double Road Line	D...L....		angled_line_double
+curved_line_thick	curved_line_thick	Curved Thick Road Line	D...L....		angled_line_thick
+curved_line_double_thick	curved_line_double_thick	Curved Double Thick Road Line	D...L....		angled_line_double_thick

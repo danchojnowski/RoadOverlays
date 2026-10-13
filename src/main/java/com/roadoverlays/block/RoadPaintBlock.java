@@ -34,7 +34,7 @@ public class RoadPaintBlock extends Block implements EntityBlock {
         this.angledPaint = AngledPaint.fromTexture(texture);
         this.curvePaint = CurvePaint.fromTexture(texture);
         this.texture = ResourceLocation.fromNamespaceAndPath("roadoverlays",
-                "block/" + texture + (angledPaint == null ? "" : "_canvas"));
+                "block/" + texture);
         registerDefaultState(stateDefinition.any()
                 .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH));
     }

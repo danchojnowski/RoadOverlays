@@ -3,7 +3,9 @@ package com.roadoverlays.item;
 import com.roadoverlays.RoadOverlays;
 import com.roadoverlays.block.RoadPaintBlock;
 import com.roadoverlays.block.CurvePaint;
+import com.roadoverlays.block.AngledPaint;
 import com.roadoverlays.block.entity.RoadPaintBlockEntity;
+import com.roadoverlays.client.PaintSettingsScreen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResultHolder;
@@ -28,8 +30,9 @@ public class RoadPaintItem extends BlockItem {
     protected boolean placeBlock(BlockPlaceContext context, BlockState state) {
         double surfaceHeight = RoadPaintBlock.surfaceHeight(context);
         RoadPaintBlock block = (RoadPaintBlock) state.getBlock();
-        double lineOffset = block.getAngledPaint() == null ? 0
-                : block.getAngledPaint().connectedOffset(context, state, surfaceHeight);
+        AngledPaint.Placement line = block.getAngledPaint() == null ? null
+                : block.getAngledPaint().connectedPlacement(context, state, surfaceHeight,
+                context.getItemInHand().getOrDefault(RoadOverlays.LINE_ANGLE.get(), AngledPaint.DEFAULT_ANGLE));
         CurvePaint.Parameters curve = block.getCurvePaint() == null ? null
                 : block.getCurvePaint().parametersForPlacement(context, state, surfaceHeight,
                 context.getItemInHand().getOrDefault(RoadOverlays.CURVE_RADIUS.get(), CurvePaint.DEFAULT_RADIUS));
@@ -37,24 +40,20 @@ public class RoadPaintItem extends BlockItem {
             return false;
         }
         if (context.getLevel().getBlockEntity(context.getClickedPos()) instanceof RoadPaintBlockEntity paint) {
-            paint.setPlacement(surfaceHeight, lineOffset, curve);
+            paint.setPlacement(surfaceHeight, line == null ? 0 : line.offset(),
+                    line == null ? -1 : line.angleHalfDegrees(), curve);
         }
         return true;
     }
 
     @Override
     public InteractionResultHolder<ItemStack> use(Level level, Player player, InteractionHand hand) {
-        if (((RoadPaintBlock) getBlock()).getCurvePaint() == null) {
+        RoadPaintBlock block = (RoadPaintBlock) getBlock();
+        if (block.getCurvePaint() == null && block.getAngledPaint() == null) {
             return super.use(level, player, hand);
         }
         ItemStack stack = player.getItemInHand(hand);
-        if (!level.isClientSide) {
-            int radius = stack.getOrDefault(RoadOverlays.CURVE_RADIUS.get(), CurvePaint.DEFAULT_RADIUS);
-            radius = player.isShiftKeyDown() ? (radius == 1 ? CurvePaint.MAX_RADIUS : radius - 1)
-                    : (radius == CurvePaint.MAX_RADIUS ? 1 : radius + 1);
-            stack.set(RoadOverlays.CURVE_RADIUS.get(), radius);
-            player.displayClientMessage(Component.translatable("message.roadoverlays.curve_radius", radius), true);
-        }
+        if (level.isClientSide) PaintSettingsScreen.open(player, hand);
         return InteractionResultHolder.sidedSuccess(stack, level.isClientSide);
     }
 
@@ -66,6 +65,12 @@ public class RoadPaintItem extends BlockItem {
             int radius = stack.getOrDefault(RoadOverlays.CURVE_RADIUS.get(), CurvePaint.DEFAULT_RADIUS);
             tooltip.add(Component.translatable("tooltip.roadoverlays.curve_radius", radius));
             tooltip.add(Component.translatable("tooltip.roadoverlays.curve_controls"));
+        }
+        AngledPaint angled = ((RoadPaintBlock) getBlock()).getAngledPaint();
+        if (angled != null) {
+            int angle = stack.getOrDefault(RoadOverlays.LINE_ANGLE.get(), AngledPaint.DEFAULT_ANGLE);
+            tooltip.add(Component.translatable("tooltip.roadoverlays.line_angle", angle / 2.0));
+            tooltip.add(Component.translatable("tooltip.roadoverlays.line_controls"));
         }
     }
 }

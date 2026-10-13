@@ -17,6 +17,7 @@ import net.minecraft.world.level.block.state.BlockState;
 public class RoadPaintBlockEntity extends BlockEntity {
     private double surfaceHeight;
     private double lineOffset;
+    private int lineAngleHalfDegrees = -1;
     private double curveRadius;
     private double curveCenterX;
     private double curveCenterZ;
@@ -35,6 +36,10 @@ public class RoadPaintBlockEntity extends BlockEntity {
         return lineOffset;
     }
 
+    public int getLineAngleHalfDegrees() {
+        return lineAngleHalfDegrees;
+    }
+
     public double getCurveRadius() {
         return curveRadius;
     }
@@ -47,9 +52,10 @@ public class RoadPaintBlockEntity extends BlockEntity {
         return curveCenterZ;
     }
 
-    public void setPlacement(double height, double offset, CurvePaint.Parameters curve) {
+    public void setPlacement(double height, double offset, int angleHalfDegrees, CurvePaint.Parameters curve) {
         surfaceHeight = Mth.clamp(height, 0, 1);
         lineOffset = offset;
+        lineAngleHalfDegrees = angleHalfDegrees;
         if (curve != null) {
             curveRadius = curve.radius();
             curveCenterX = curve.centerX();
@@ -68,6 +74,7 @@ public class RoadPaintBlockEntity extends BlockEntity {
             surfaceHeight = Mth.clamp(tag.getDouble("surface_height"), 0, 1);
         }
         lineOffset = tag.getDouble("line_offset");
+        lineAngleHalfDegrees = tag.contains("line_angle") ? tag.getInt("line_angle") : -1;
         curveRadius = tag.getDouble("curve_radius");
         curveCenterX = tag.getDouble("curve_center_x");
         curveCenterZ = tag.getDouble("curve_center_z");
@@ -78,6 +85,7 @@ public class RoadPaintBlockEntity extends BlockEntity {
         super.saveAdditional(tag, registries);
         tag.putDouble("surface_height", surfaceHeight);
         tag.putDouble("line_offset", lineOffset);
+        if (lineAngleHalfDegrees >= 0) tag.putInt("line_angle", lineAngleHalfDegrees);
         if (curveRadius > 0) {
             tag.putDouble("curve_radius", curveRadius);
             tag.putDouble("curve_center_x", curveCenterX);

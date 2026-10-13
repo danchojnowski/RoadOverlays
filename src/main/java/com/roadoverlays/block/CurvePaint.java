@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
 /** A circle is shared by all connected pieces of a curve, regardless of its radius. */
 public final class CurvePaint {
     public static final int DEFAULT_RADIUS = 2;
-    public static final int MAX_RADIUS = 64;
+    public static final int MAX_RADIUS = 100;
     private static final Pattern NAME = Pattern.compile("curved_line_(single|double|thick|double_thick)");
 
     public record Parameters(double radius, double centerX, double centerZ) {
