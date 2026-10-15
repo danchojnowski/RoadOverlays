@@ -2,6 +2,16 @@
 
 A Minecraft 1.21.1 NeoForge mod for placing road paint over blocks. Requires NeoForge 21.1.248 or newer in the 21.1 series. The tested paint catalog is the 1.0 baseline; later versions add connected angled and curved road lines.
 
+## Screenshots
+
+![Colored road lettering and connected straight, angled, and curved lines in Minecraft](img1.png)
+
+*Colored lettering and connected lines at different angles and radii.*
+
+![Road paint designs including lane lines, arrows, words, symbols, and a curve in Minecraft](img2.png)
+
+*A selection of lane lines, arrows, words, symbols, and curves.*
+
 ## Build and run
 
 Requires Java 21. Build the mod with:
