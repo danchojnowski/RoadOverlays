@@ -1,6 +1,6 @@
 # Road Overlays
 
-A Minecraft 1.21.1 NeoForge mod for placing road paint over blocks. Requires NeoForge 21.1.248 or newer in the 21.1 series. The tested paint catalog is the 1.0 baseline; later versions add connected angled and curved road lines.
+A Minecraft 1.21.1 NeoForge mod for placing road paint over blocks. Based on the 1.12 mod "Fureniku's Roads". Requires NeoForge 21.1.248 or newer in the 21.1 series.
 
 ## Screenshots
 
