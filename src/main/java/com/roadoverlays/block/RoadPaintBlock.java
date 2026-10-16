@@ -27,12 +27,16 @@ public class RoadPaintBlock extends Block implements EntityBlock {
     private final ResourceLocation texture;
     private final AngledPaint angledPaint;
     private final CurvePaint curvePaint;
+    private final boolean uprightArtwork;
 
     public RoadPaintBlock(DyeColor color, String texture, Properties properties) {
         super(properties);
         this.color = color;
         this.angledPaint = AngledPaint.fromTexture(texture);
         this.curvePaint = CurvePaint.fromTexture(texture);
+        this.uprightArtwork = !texture.startsWith("line_")
+                && !texture.equals("white_road_line")
+                && angledPaint == null && curvePaint == null;
         this.texture = ResourceLocation.fromNamespaceAndPath("roadoverlays",
                 "block/" + texture);
         registerDefaultState(stateDefinition.any()
@@ -74,6 +78,10 @@ public class RoadPaintBlock extends Block implements EntityBlock {
 
     public CurvePaint getCurvePaint() {
         return curvePaint;
+    }
+
+    public boolean hasUprightArtwork() {
+        return uprightArtwork;
     }
 
     @Override

@@ -61,6 +61,9 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
             case WEST -> 90;
             default -> 0;
         };
+        // Block placement faces toward the player. Turn readable artwork so its top
+        // points away from the player, while keeping line markings aligned as before.
+        if (block.hasUprightArtwork()) rotation += 180;
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
         PoseStack.Pose pose = poseStack.last();

@@ -38,7 +38,7 @@ The old fixed-angle block and item IDs were removed in 1.4. Replace any of those
 
 Version 1.2 adds curved single, double, thick, and double thick lines. Each curve item has a radius starting at 2 blocks; version 1.5 raises the maximum to 100. Right-click without placing to open the radius slider, then click Done to save or Cancel to discard the selection. The tooltip shows the selected radius. Place the first piece while facing along the intended road direction; the curve turns right, or left if you sneak while placing it. Place more pieces on adjacent blocks along the curve. They inherit the first piece's circle center and radius, so their painted edges meet without transition pieces. You can mix colors within the same line style. Curves only connect when the neighboring paint is at the same surface height. Each piece saves its circle parameters with the world.
 
-Place a paint on top of a block and change its direction by facing a different way. Paint has no collision and can be removed normally. Each image is drawn within one block, regardless of its source PNG resolution.
+Place a paint on top of a block and change its direction by facing a different way. Letters, words, arrows, symbols, and other artwork face the player when placed. Paint has no collision and can be removed normally. Each image is drawn within one block, regardless of its source PNG resolution.
 
 ## Paint applicator
 
