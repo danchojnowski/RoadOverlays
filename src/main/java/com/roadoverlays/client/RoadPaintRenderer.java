@@ -14,6 +14,7 @@ import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.AABB;
 import com.mojang.math.Axis;
 import net.minecraft.resources.ResourceLocation;
@@ -33,7 +34,23 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
         int blue = color & 0xFF;
 
         poseStack.pushPose();
-        poseStack.translate(0.5, paint.getSurfaceHeight() - 1 + SURFACE_OFFSET, 0.5);
+        Direction facing = paint.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
+        boolean wall = paint.getBlockState().getValue(BlockStateProperties.ATTACH_FACE) == AttachFace.WALL;
+        if (wall) {
+            double distance = -0.5 + SURFACE_OFFSET;
+            poseStack.translate(0.5 + facing.getStepX() * distance, 0.5,
+                    0.5 + facing.getStepZ() * distance);
+            int yaw = switch (facing) {
+                case EAST -> 90;
+                case NORTH -> 180;
+                case WEST -> 270;
+                default -> 0;
+            };
+            poseStack.mulPose(Axis.YP.rotationDegrees(yaw));
+            poseStack.mulPose(Axis.XP.rotationDegrees(90));
+        } else {
+            poseStack.translate(0.5, paint.getSurfaceHeight() - 1 + SURFACE_OFFSET, 0.5);
+        }
         VertexConsumer vertices = buffers.getBuffer(RenderType.entityCutout(TextureAtlas.LOCATION_BLOCKS));
         if (block.getCurvePaint() != null) {
             TextureAtlasSprite whitePixel = Minecraft.getInstance()
@@ -47,15 +64,15 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
         if (angled != null) {
             TextureAtlasSprite whitePixel = Minecraft.getInstance()
                     .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(WHITE_PIXEL);
-            AdjustableLineRenderer.render(paint, angled, poseStack.last(), vertices,
+            AdjustableLineRenderer.render(paint, angled, wall ? Direction.NORTH : facing,
+                    poseStack.last(), vertices,
                     whitePixel, red, green, blue, packedLight, packedOverlay);
             poseStack.popPose();
             return;
         }
         TextureAtlasSprite sprite = Minecraft.getInstance()
                 .getTextureAtlas(TextureAtlas.LOCATION_BLOCKS).apply(block.getPaintTexture());
-        Direction facing = paint.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
-        int rotation = switch (facing) {
+        int rotation = wall ? 0 : switch (facing) {
             case EAST -> 270;
             case SOUTH -> 180;
             case WEST -> 90;
@@ -63,7 +80,7 @@ public class RoadPaintRenderer implements BlockEntityRenderer<RoadPaintBlockEnti
         };
         // Block placement faces toward the player. Turn readable artwork so its top
         // points away from the player, while keeping line markings aligned as before.
-        if (block.hasUprightArtwork()) rotation += 180;
+        if (!wall && block.hasUprightArtwork()) rotation += 180;
         poseStack.mulPose(Axis.YP.rotationDegrees(rotation));
 
         PoseStack.Pose pose = poseStack.last();

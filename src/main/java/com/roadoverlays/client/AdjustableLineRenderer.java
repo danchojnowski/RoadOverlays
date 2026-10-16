@@ -7,7 +7,6 @@ import com.roadoverlays.block.LineStyle;
 import com.roadoverlays.block.entity.RoadPaintBlockEntity;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
-import net.minecraft.world.level.block.state.properties.BlockStateProperties;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -20,12 +19,11 @@ final class AdjustableLineRenderer {
     private AdjustableLineRenderer() {
     }
 
-    static void render(RoadPaintBlockEntity paint, AngledPaint angled, PoseStack.Pose pose,
+    static void render(RoadPaintBlockEntity paint, AngledPaint angled, Direction facing, PoseStack.Pose pose,
                        VertexConsumer vertices, TextureAtlasSprite whitePixel,
                        int red, int green, int blue, int light, int overlay) {
         int angle = paint.getLineAngleHalfDegrees() >= 0
                 ? paint.getLineAngleHalfDegrees() : AngledPaint.DEFAULT_ANGLE;
-        Direction facing = paint.getBlockState().getValue(BlockStateProperties.HORIZONTAL_FACING);
         AngledPaint.Normal normal = AngledPaint.worldNormal(angle, facing);
         LineStyle style = angled.style();
         float u = (whitePixel.getU0() + whitePixel.getU1()) * 0.5f;

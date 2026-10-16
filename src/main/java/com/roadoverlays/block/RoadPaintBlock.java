@@ -18,6 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
 import net.minecraft.world.level.block.state.properties.BlockStateProperties;
+import net.minecraft.world.level.block.state.properties.AttachFace;
 import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.VoxelShape;
 import net.minecraft.world.phys.shapes.Shapes;
@@ -40,18 +41,24 @@ public class RoadPaintBlock extends Block implements EntityBlock {
         this.texture = ResourceLocation.fromNamespaceAndPath("roadoverlays",
                 "block/" + texture);
         registerDefaultState(stateDefinition.any()
-                .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH));
+                .setValue(BlockStateProperties.HORIZONTAL_FACING, Direction.NORTH)
+                .setValue(BlockStateProperties.ATTACH_FACE, AttachFace.FLOOR));
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<net.minecraft.world.level.block.Block, BlockState> builder) {
-        builder.add(BlockStateProperties.HORIZONTAL_FACING);
+        builder.add(BlockStateProperties.HORIZONTAL_FACING, BlockStateProperties.ATTACH_FACE);
     }
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext context) {
+        Direction face = context.getClickedFace();
+        if (face == Direction.DOWN) return null;
         return defaultBlockState()
-                .setValue(BlockStateProperties.HORIZONTAL_FACING, context.getHorizontalDirection().getOpposite());
+                .setValue(BlockStateProperties.ATTACH_FACE,
+                        face == Direction.UP ? AttachFace.FLOOR : AttachFace.WALL)
+                .setValue(BlockStateProperties.HORIZONTAL_FACING,
+                        face == Direction.UP ? context.getHorizontalDirection().getOpposite() : face);
     }
 
     public static double surfaceHeight(BlockPlaceContext context) {
@@ -96,6 +103,14 @@ public class RoadPaintBlock extends Block implements EntityBlock {
 
     @Override
     protected VoxelShape getShape(BlockState state, BlockGetter level, BlockPos pos, CollisionContext context) {
+        if (state.getValue(BlockStateProperties.ATTACH_FACE) == AttachFace.WALL) {
+            return switch (state.getValue(BlockStateProperties.HORIZONTAL_FACING)) {
+                case NORTH -> box(0, 0, 15, 16, 16, 16);
+                case SOUTH -> box(0, 0, 0, 16, 16, 1);
+                case WEST -> box(15, 0, 0, 16, 16, 16);
+                default -> box(0, 0, 0, 1, 16, 16);
+            };
+        }
         double height = level.getBlockEntity(pos) instanceof RoadPaintBlockEntity paint
                 ? paint.getSurfaceHeight() : state.hasProperty(LegacyRoadPaintBlock.HEIGHT)
                 ? state.getValue(LegacyRoadPaintBlock.HEIGHT) / 16.0 : 1;
@@ -109,13 +124,20 @@ public class RoadPaintBlock extends Block implements EntityBlock {
 
     @Override
     public boolean canSurvive(BlockState state, LevelReader level, BlockPos pos) {
+        if (state.getValue(BlockStateProperties.ATTACH_FACE) == AttachFace.WALL) {
+            Direction facing = state.getValue(BlockStateProperties.HORIZONTAL_FACING);
+            BlockPos support = pos.relative(facing.getOpposite());
+            return level.getBlockState(support).isFaceSturdy(level, support, facing);
+        }
         return !level.getBlockState(pos.below()).isAir();
     }
 
     @Override
     protected BlockState updateShape(BlockState state, Direction direction, BlockState neighborState,
                                      LevelAccessor level, BlockPos pos, BlockPos neighborPos) {
-        return direction == Direction.DOWN && neighborState.isAir()
+        Direction supportDirection = state.getValue(BlockStateProperties.ATTACH_FACE) == AttachFace.WALL
+                ? state.getValue(BlockStateProperties.HORIZONTAL_FACING).getOpposite() : Direction.DOWN;
+        return direction == supportDirection && !canSurvive(state, level, pos)
                 ? Blocks.AIR.defaultBlockState()
                 : super.updateShape(state, direction, neighborState, level, pos, neighborPos);
     }
